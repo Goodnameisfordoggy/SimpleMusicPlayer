@@ -1,7 +1,7 @@
 """
 Maker: HDJ
 Start at: 2023/6/14
-Last modified date: 2023/9/22
+Last modified date: 2023/9/22 
 Version: 3.2.5
 使用须知:
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
