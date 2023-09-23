@@ -1,12 +1,12 @@
 """
 Maker: HDJ
 Start at: 2023/6/14
-Last modified date: 2023/7/16
-version: 3.2.2
+Last modified date: 2023/9/18
+version: 3.2.3
 使用须知:
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
-在58行下可添加开始时的默认文件夹(非必须,若不设置请在菜单"更改文件夹"进行选定后点击播放),
-在304行下可以添加或更改自己的音乐文件夹路径(使用前必填).
+在59行下可添加开始时的默认文件夹(非必须,若不设置请在菜单"更改文件夹"进行选定后点击播放),
+在305行下可以添加或更改自己的音乐文件夹路径(使用前必填).
 其余参数可根据注释,慎重更改.
 """
 import time
@@ -16,12 +16,13 @@ from tkinter import ttk
 import glob
 import os
 import random
-import pyglet
 import re
 import threading
+#需要cmd安装
+import pyglet
 import pynput.keyboard
 from pynput.keyboard import Key, Controller
-# import pyautogui
+import keyboard
 
 
 class App(object):
@@ -56,7 +57,7 @@ class App(object):
         self.listener = KeyboardListener(self)
 
         # 此处修改默认的音乐文件夹的绝对路径,在r后""中直接添加路径即可
-        self.music_folder_path = r"C:\Users\HDJ\Music\歌曲\♥️".replace(
+        self.music_folder_path = r"C:\Users\HDJ\Music\歌曲\?♥️".replace(
             "\\", "\\\\")
 
     # 更新音乐列表
@@ -302,8 +303,8 @@ class ChangeFolderMenu(object):
         self.menu_change_folder_path.add_cascade(
             label='按歌手分类', menu=singer_path)
         # 三级下拉菜单(项) #在r后""中直接添加路径即可(以下为配置实例) QwQ: label为菜单项文本,语法格式:上一级菜单.add_command(这一级菜单的属性)
-        self_path.add_command(label='♥️',
-                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\♥️".replace("\\", "\\\\")))
+        self_path.add_command(label='?7?3?1?5',
+                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\?7?3?1?5".replace("\\", "\\\\")))
         self_path.add_command(label='总库',
                               command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\总库".replace("\\", "\\\\")))
         singer_path.add_command(label='薛之谦',
@@ -505,7 +506,7 @@ class IsOverMonitor(object):
         self.thread_monitor.start()
 
     # 播放完成检测
-    def is_over(self):
+    def is_over(self) -> None:
         if self.app.player.time > self.app.file_total_time:
             print("Next")
             time.sleep(2)
@@ -513,22 +514,22 @@ class IsOverMonitor(object):
                 self.app.play_song()
             else:
                 self.app.random_play()
+        #按照一定时间间隔递归
         self.app.ui_root.after(3000, self.is_over)
 
 # 子线程 2 --键盘监听操作
-
-
 class KeyboardListener(object):
 
     def __init__(self, app) -> None:
         self.app = app
+        #pynput.keyboard.Listener可以创建新线程,并持续监听键盘
         self.thread_listen = pynput.keyboard.Listener(
-            on_press=self.key_press_p2)
+            on_press=self.key_press_p4)
         self.thread_listen.start()
     
-    # QwQ:当前阶段,键盘快捷方式仅用于主UI界面最小化时
+    # QwQ:当前阶段,键盘快捷方式仅用于主UI界面最小化时,或UI界面不在最顶层时.
     # 键盘快捷键方案1:主键盘
-    def key_press_p1(self, key):
+    def key_press_p1(self, key) -> None:
         try:
             # 下一首'right'
             if str(key) == 'Key.right':
@@ -555,7 +556,7 @@ class KeyboardListener(object):
             pass
 
     # 键盘快捷键方案2:Ctrl+主键盘
-    def key_press_p2(self, key):
+    def key_press_p2(self, key) -> None:
         try:
             # 下一首'Ctrl+d'
             if key.char == '\x04':
@@ -581,6 +582,58 @@ class KeyboardListener(object):
             #防止key没有字符值导致的报错
             pass
 
+    # 键盘快捷键方案3:数字键盘
+    def key_press_p3(self, key) -> None:
+        try:
+            # 下一首'6'
+            if str(key) == '<102>':
+                print("'6' has been pressed")
+                self.app.next_play()
+            # 上一首'4'
+            elif str(key) == '<100>':
+                print("'4' has been pressed")
+                self.app.previous_play()
+            # 暂停/开始'5'
+            elif str(key) == '<101>':
+                print("'5' has been pressed")
+                self.app.music_pause()
+            # 随机播放'1'
+            elif str(key) == '<97>':
+                print("'1' has been pressed")
+                self.app.random_play()
+            # 单曲循环'0'
+            elif str(key) == '<96>':
+                print("'0' has been pressed")
+                self.app.single_cycle_play()
+        except AttributeError:
+            #防止key没有字符值导致的报错
+            pass
+
+    # 键盘快捷键方案4:Ctrl+数字键盘(当前使用的第三方库无法区分主键盘与数字键盘的数字键)
+    def key_press_p4(self, key) -> None:
+        try:
+            # 下一首'Ctrl+6'
+            if keyboard.is_pressed('ctrl') and keyboard.is_pressed('6'):
+                print("'Ctrl+6' has been pressed")
+                self.app.next_play()
+            # 上一首'Ctrl+4'
+            elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('4'):
+                print("'Ctrl+4' has been pressed")
+                self.app.previous_play()
+            # 暂停/开始'Ctrl+5'
+            elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('5'):
+                print("'Ctrl+5' has been pressed")
+                self.app.music_pause()
+            # 随机播放'Ctrl+1'
+            elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('1'):
+                print("'Ctrl+1' has been pressed")
+                self.app.random_play()
+            # 单曲循环'Ctrl+0'
+            elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('0'):
+                print("'Ctrl+0' has been pressed")
+                self.app.single_cycle_play()
+        except AttributeError:
+            pass
 
 def main():
     app = App()
