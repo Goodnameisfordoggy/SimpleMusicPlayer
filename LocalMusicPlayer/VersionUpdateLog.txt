@@ -49,6 +49,9 @@ add function:
     2023/9/19 ~ 2023/9/20
       3.2.4.添加了快捷键方案管理函数.
             原理: change_key_press_programme()
+    2023/9/21 ~ 2023/9/21
+      3.2.5.添加了主UI菜单"快捷方式".
+            原理: 将键盘快捷方案的切换关联到该菜单.详见局部类(ChangeKeyPressProgramme);
 
 
 
