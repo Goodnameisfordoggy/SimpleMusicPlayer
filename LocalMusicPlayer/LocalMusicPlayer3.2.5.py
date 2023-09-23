@@ -1,11 +1,11 @@
 """
 Maker: HDJ
 Start at: 2023/6/14
-Last modified date: 2023/9/20
-version: 3.2.4
+Last modified date: 2023/9/21
+version: 3.2.5
 使用须知:
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
-在58行下可添加开始时的默认文件夹(非必须,若不设置请在菜单"更改文件夹"进行选定后点击播放),
+在57行下可添加开始时的默认文件夹(非必须,若不设置请在菜单"更改文件夹"进行选定后点击播放),
 在304行下可以添加或更改自己的音乐文件夹路径(使用前必填).
 其余参数可根据注释,慎重更改.
 """
@@ -18,11 +18,9 @@ import os
 import random
 import re
 import threading
-from typing import Callable, Any, Type
 # 需要cmd安装
 import pyglet
 import pynput.keyboard
-from pynput.keyboard import Key, Controller
 import keyboard
 
 
@@ -51,13 +49,13 @@ class App(object):
         self.current_position = None  # 当前(文件的)播放位置
         self.need_cycle = False  # 是否循环播放的标志
         self.file_total_time = 0  # 音乐文件总时长
-
+        self.key_press_programme = None # 键盘快捷方案序号
+        #绑定线程
         self.is_over_monitor = IsOverMonitor(self)
         self.listener = KeyboardListener(self)
 
         # 此处修改默认的音乐文件夹的绝对路径,在r后""中直接添加路径即可
-        self.music_folder_path = r"C:\Users\HDJ\Music\歌曲\♥️".replace(
-            "\\", "\\\\")
+        self.music_folder_path = r"C:\Users\HDJ\Music\歌曲\♥️".replace("\\", "\\\\")
 
     # 更新音乐列表
     def update_song_list(self):
@@ -259,7 +257,6 @@ class App(object):
         # 一级菜单(查找歌曲) QwQ:将一级菜单(查找歌曲)所绑定的二级UI作为对象(不包含菜单的创建操作)
         menu_search_for_target_song = tkinter.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='查找歌曲', menu=menu_search_for_target_song)
-
         # 打开二级UI(歌曲查询界面)
         def open_search_ui():
             self.ui_root.iconify()  # 将一级UI最小化到任务栏
@@ -268,6 +265,9 @@ class App(object):
         # 歌曲查询界面的菜单入口
         menu_search_for_target_song.add_command(
             label='打开查询界面', command=open_search_ui)
+        
+        #一级菜单(更改键盘快捷方式)
+        menu_change_key_press_programme = ChangeKeyPressProgramme(self)
 
     # 主UI界面窗口位置居中
     def center(self):
@@ -302,8 +302,8 @@ class ChangeFolderMenu(object):
         self.menu_change_folder_path.add_cascade(label='按歌手分类', menu=singer_path)
 
         # 三级下拉菜单(项) #在r后""中直接添加路径即可(以下为配置实例) QwQ: label为菜单项文本,语法格式:上一级菜单.add_command(这一级菜单的属性)
-        self_path.add_command(label='�7�3�1�5',
-                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\�7�3�1�5".replace("\\", "\\\\")))
+        self_path.add_command(label='♥️',
+                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\♥️".replace("\\", "\\\\")))
         self_path.add_command(label='总库',
                               command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\总库".replace("\\", "\\\\")))
         singer_path.add_command(label='薛之谦',
@@ -492,8 +492,33 @@ class SearchUI(object):
 # 菜单--更改键盘快捷方案
 class ChangeKeyPressProgramme(object):
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, app) -> None:
+        self.app = app
+        self.menu_change_key_press_programme = tkinter.Menu()
+        self.build_menu()
+
+    def build_menu(self) -> None:
+        #一级菜单
+        self.menu_change_key_press_programme = tkinter.Menu(self.app.menu, tearoff=0)
+        self.app.menu.add_cascade(label='快捷方式', menu=self.menu_change_key_press_programme)
+
+        # 二级菜单
+        self.menu_change_key_press_programme.add_command(label='关闭快捷方式', 
+                                                         command=lambda: setattr(self.app, 'key_press_programme', None))
+        self.menu_change_key_press_programme.add_command(label='主键盘+方向键', 
+                                                         command=lambda: setattr(self.app, 'key_press_programme', '1'))
+        self.menu_change_key_press_programme.add_command(label='Ctrl+主键盘', 
+                                                         command=lambda: setattr(self.app, 'key_press_programme', '2'))
+        self.menu_change_key_press_programme.add_command(label='数字键盘', 
+                                                         command=lambda: setattr(self.app, 'key_press_programme', '3'))
+        self.menu_change_key_press_programme.add_command(label='Ctrl+数字键盘', 
+                                                         command=lambda: setattr(self.app, 'key_press_programme', '4'))
+ 
+        #绑定操作(可以被setattr()替换)
+    #def change_key_press_programme(self, programme_number):
+        #self.app.key_press_programme = programme_number
+
+
 # 子线程 1 --播放完毕检测
 class IsOverMonitor(object):
     def __init__(self, app) -> None:
@@ -523,7 +548,6 @@ class KeyboardListener(object):
         # pynput.keyboard.Listener可以创建新线程,并持续监听键盘
         self.thread_listen = pynput.keyboard.Listener(on_press=self.change_key_press_programme)
         self.thread_listen.start()
-        self.key_press_programme = '1'
 
     # QwQ:当前阶段,键盘快捷方式仅用于主UI界面最小化时,或UI界面不在最顶层时.
     def change_key_press_programme(self, key, programme=None):
@@ -533,8 +557,8 @@ class KeyboardListener(object):
             "3": self.key_press_p3,
             "4": self.key_press_p4,
         }
-        # programme绑定KeyboardListener属性,方便类外操作
-        programme = self.key_press_programme
+        # programme绑定App属性,方便类外操作
+        programme = self.app.key_press_programme
         # 关闭键盘快捷方式
         if programme is None:
             return None
@@ -545,7 +569,7 @@ class KeyboardListener(object):
         else:
             return None
 
-    # 键盘快捷键方案1:主键盘+方向键
+    # 键盘快捷键方案1:主键盘
     def key_press_p1(self, key) -> None:
         try:
             # 下一首'right'
