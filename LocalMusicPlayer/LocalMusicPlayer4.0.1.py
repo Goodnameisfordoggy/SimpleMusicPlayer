@@ -1,14 +1,24 @@
-"""
-Maker: HDJ
-Start at: 2023/6/14
-Last modified date: 2023/9/21
-version: 3.2.5
-使用须知:
+'''
+Author: HDJ
+StartDate: 2023-6-14 00:00:00
+LastEditTime: 2023-10-07 23:00:58
+version: 4.0.1
+FilePath: \python\py.1求道境\音乐随机播放器\LocalMusicPlayer.py
+Description: 
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
-在57行下可添加开始时的默认文件夹(非必须,若不设置请在菜单"更改文件夹"进行选定后点击播放),
-在304行下可以添加或更改自己的音乐文件夹路径(使用前必填).
+在323行下可以添加或更改自己的音乐文件夹路径(仅需配置一次,可更改).
 其余参数可根据注释,慎重更改.
-"""
+
+				/*		写字楼里写字间，写字间里程序员；
+				*		程序人员写程序，又拿程序换酒钱。
+				*		酒醒只在网上坐，酒醉还来网下眠；
+				*		酒醉酒醒日复日，网上网下年复年。
+				*		但愿老死电脑间，不愿鞠躬老板前；
+				*		奔驰宝马贵者趣，公交自行程序员。
+				*		别人笑我忒疯癫，我笑自己命太贱；
+				\*		不见满街漂亮妹，哪个归得程序员？    
+Copyright (c) ${2023} by ${HDJ}, All Rights Reserved. 
+'''
 import time
 import tkinter
 import tkinter.messagebox
@@ -18,11 +28,18 @@ import os
 import random
 import re
 import threading
+import json
 # 需要cmd安装
 import pyglet
 import pynput.keyboard
 import keyboard
 
+
+# os.path.dirname(os.path.abspath(__file__))获取当前文件所在目录的绝对路径
+with open(
+    os.path.dirname(os.path.abspath(__file__)) + r'\PlayerConfig.json', 'r', encoding='utf-8'
+) as configjson:
+    jsdate = json.load(configjson)
 
 class App(object):
 
@@ -36,7 +53,7 @@ class App(object):
         # 一级UI界面的层次设置, False置于最底部, True置顶
         self.ui_root.attributes('-topmost', False)
         self.button_pause_or_begin = tkinter.Button()  # 暂停/开始按钮
-        self.button_cycle = tkinter.Button()  # 单曲循环按钮
+        #self.button_cycle = tkinter.Button()  # 单曲循环按钮
         self.current_play_label = tkinter.Label()  # 当前播放项展示标签
         self.menu = tkinter.Menu()  # 菜单栏
         self.build_platform()
@@ -44,19 +61,23 @@ class App(object):
         self.center()
         # 底层变量
         self.player = pyglet.media.Player()  # 播放器
-        self.play_dict = {}  # 播放字典
-        self.current_music_number = None  # 当前播放的音乐文件序号
-        self.current_position = None  # 当前(文件的)播放位置
-        self.need_cycle = False  # 是否循环播放的标志
-        self.file_total_time = 0  # 音乐文件总时长
-        self.key_press_programme = None # 键盘快捷方案序号
+        self.play_dict = jsdate['play_dict']  # 播放字典
+        self.current_music_number = (
+            jsdate['current_music_number'] 
+            if type(jsdate['current_music_number'])!=int 
+            else '*{}*'.format(jsdate['current_music_number'])
+        )  # 当前播放的音乐文件序号
+        self.current_position = jsdate['current_position']  # 当前(文件的)播放位置
+        self.need_cycle = jsdate['need_cycle']  # 是否循环播放的标志
+        self.file_total_time = jsdate['file_total_time']  # 音乐文件总时长
+        self.key_press_programme = jsdate['key_press_programme'] # 键盘快捷方案序号
         #绑定线程
         self.is_over_monitor = IsOverMonitor(self)
         self.listener = KeyboardListener(self)
+        self.dateprotector = DateProtector(self)
 
-        # 此处修改默认的音乐文件夹的绝对路径,在r后""中直接添加路径即可
-        self.music_folder_path = r"C:\Users\HDJ\Music\歌曲\♥️".replace("\\", "\\\\")
-
+        # 获取音乐文件夹的绝对路径
+        self.music_folder_path = jsdate['music_folder_path']
     # 更新音乐列表
     def update_song_list(self):
         # 创建一个空字典
@@ -92,8 +113,7 @@ class App(object):
 
         music_file_path = self.play_dict.get(f'{self.current_music_number}')
         music_file_name = os.path.basename(music_file_path)
-        self.current_play_label.config(
-            text=music_file_name.replace('.mp3', ''))
+        self.current_play_label.config(text=music_file_name.replace('.mp3', ''))
 
     # 随机播放(按钮绑定操作)
     def random_play(self):
@@ -101,8 +121,7 @@ class App(object):
             self.player.pause()
             self.player.delete()
         if type(self.current_music_number) == str:  # 确保解密/确保对象类型为int
-            self.current_music_number = int(
-                self.current_music_number.replace('*', ''))
+            self.current_music_number = int(self.current_music_number.replace('*', ''))
         self.current_music_number = random.randint(1, len(self.play_dict))
         self.change_current_play_label()
         self.play_song()
@@ -135,8 +154,7 @@ class App(object):
             self.player.pause()
             self.player.delete()
             if type(self.current_music_number) == str:  # 确保解密/确保对象类型为int
-                self.current_music_number = int(
-                    self.current_music_number.replace('*', ''))
+                self.current_music_number = int(self.current_music_number.replace('*', ''))
             self.current_music_number += 1
             if self.current_music_number > len(self.play_dict):
                 self.current_music_number = 1
@@ -155,10 +173,9 @@ class App(object):
 
         # 开始路径2:之前有播放内容被暂停,点击按钮继续播放
         elif type(self.current_music_number) == str:  # QwQ:通过类型的转化来区分路径
-            self.current_music_number = int(
-                self.current_music_number.replace('*', ''))
+            self.current_music_number = int(self.current_music_number.replace('*', ''))
             self.play_song(self.current_position)
-            self.current_position = None
+            self.current_position = 0.0
             # 按钮文本显示为"暂停"
             self.button_pause_or_begin.config(text='暂停')
 
@@ -180,13 +197,11 @@ class App(object):
             if not self.need_cycle:
                 self.need_cycle = True
                 # 将文本更改为"cycling",按钮显示为凹陷
-                self.button_cycle.config(
-                    text='cycling', fg='rosybrown', relief=tkinter.SUNKEN)
+                self.button_cycle.config(text='cycling', fg='rosybrown', relief=tkinter.SUNKEN)
             elif self.need_cycle:
                 self.need_cycle = False
                 # 将文本更改为"单曲循环",按钮显示为凸起
-                self.button_cycle.config(
-                    text='单曲循环', fg='black', relief=tkinter.RAISED)
+                self.button_cycle.config(text='单曲循环', fg='black', relief=tkinter.RAISED)
 
     # 确认退出(按钮绑定操作)
     def confirm_to_quit(self):
@@ -212,37 +227,40 @@ class App(object):
         frame3.pack()
 
         # f0 创建当前正在播放内容的显示器
-        current_play_text = tkinter.Label(
-            frame0, text='正在播放', wraplength=30, font=("宋体", 10), fg='gray')
+        current_play_text = tkinter.Label(frame0, text='正在播放', 
+                                          wraplength=30, font=("宋体", 10), fg='gray')
         current_play_text.pack(expand=True, side='left')
-        self.current_play_label = tkinter.Label(
-            frame0, text='请点击开始播放', wraplength=270, font=("楷体", 10), fg='gray')
+        self.current_play_label = tkinter.Label(frame0, text=jsdate['current_music_name'], 
+                                                wraplength=270, font=("楷体", 10), fg='gray')
         self.current_play_label.pack(expand=True, side='right', )
 
         # f1
-        button_previous = tkinter.Button(
-            frame1, text='上一首', command=self.previous_play)
+        button_previous = tkinter.Button(frame1, text='上一首', command=self.previous_play)
         button_previous.pack(side='left')
-        button_next = tkinter.Button(
-            frame1, text='下一首', command=self.next_play)
+        button_next = tkinter.Button(frame1, text='下一首', command=self.next_play)
         button_next.pack(side='right')
-        self.button_pause_or_begin = tkinter.Button(
-            frame1, text='开始', command=self.music_pause)
+        self.button_pause_or_begin = tkinter.Button(frame1, text='开始', command=self.music_pause)
         self.button_pause_or_begin.pack(side='top')
         # f2
-        button_shuffle = tkinter.Button(
-            frame2, text='随机播放', command=self.random_play)
+        button_shuffle = tkinter.Button(frame2, text='随机播放', command=self.random_play)
         button_shuffle.pack(side='left')
         self.button_cycle = tkinter.Button(
-            frame2, text='单曲循环', command=self.single_cycle_play)
+            frame2, 
+            text=('单曲循环' if jsdate['need_cycle'] is False else 'cycling'), 
+            relief=(tkinter.RAISED if jsdate['need_cycle'] is False else tkinter.SUNKEN),
+            fg=('black' if jsdate['need_cycle'] is False else 'rosybrown'),
+            command=self.single_cycle_play
+        )
         self.button_cycle.pack(side='right')
-
+        
         # f3
-        button_quit = tkinter.Button(
-            frame3, text='退出', command=self.confirm_to_quit)
+        button_quit = tkinter.Button(frame3, text='退出', command=self.confirm_to_quit)
         button_quit.pack()
         label_explain = tkinter.Label(
-            frame3, text='请不要点击过快,UI响应需要时间!\n此工具仅用于学术交流!', font=("楷体", 10), fg='blue')
+            frame3, 
+            text='请不要点击过快,UI响应需要时间!\n此工具仅用于学术交流!', 
+            font=("楷体", 10), fg='blue'
+        )
         label_explain.pack()
 
         # 菜单设置
@@ -250,11 +268,13 @@ class App(object):
         self.menu = tkinter.Menu(self.ui_root)  # 创建菜单栏对象
         self.ui_root.config(menu=self.menu)  # 将菜单栏对象添加到UI界面中
 
+        #菜单创建操作
+
         # 一级菜单(更改文件夹) QwQ:将一级菜单(更改文件夹)作为对象(包含菜单的创建操作)
         # 将App类对象传递给ChangeFolderMenu的构造函数来创建ChangeFolderMenu类对象
         menu_chang_folder = ChangeFolderMenu(self)
 
-        # 一级菜单(查找歌曲) QwQ:将一级菜单(查找歌曲)所绑定的二级UI作为对象(不包含菜单的创建操作)
+        # 一级菜单(查找歌曲) QwQ:将一级菜单(查找歌曲)所绑定的二级UI作为对象(不包含二级菜单的创建操作)
         menu_search_for_target_song = tkinter.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='查找歌曲', menu=menu_search_for_target_song)
         # 打开二级UI(歌曲查询界面)
@@ -263,8 +283,7 @@ class App(object):
             # 将App类对象传递给SearchUI的构造函数来创建SearchUI类对象
             self.search_ui = SearchUI(self)
         # 歌曲查询界面的菜单入口
-        menu_search_for_target_song.add_command(
-            label='打开查询界面', command=open_search_ui)
+        menu_search_for_target_song.add_command(label='打开查询界面', command=open_search_ui)
         
         #一级菜单(更改键盘快捷方式)
         menu_change_key_press_programme = ChangeKeyPressProgramme(self)
@@ -302,22 +321,22 @@ class ChangeFolderMenu(object):
         self.menu_change_folder_path.add_cascade(label='按歌手分类', menu=singer_path)
 
         # 三级下拉菜单(项) #在r后""中直接添加路径即可(以下为配置实例) QwQ: label为菜单项文本,语法格式:上一级菜单.add_command(这一级菜单的属性)
-        self_path.add_command(label='♥️',
-                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\♥️".replace("\\", "\\\\")))
+        self_path.add_command(label='❤️',
+                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\❤️"))
         self_path.add_command(label='总库',
-                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\总库".replace("\\", "\\\\")))
+                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\总库"))
         singer_path.add_command(label='薛之谦',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\薛之谦".replace("\\", "\\\\")))
+                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\薛之谦"))
         singer_path.add_command(label='周杰伦',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\周杰伦".replace("\\", "\\\\")))
+                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\周杰伦"))
         singer_path.add_command(label='林俊杰',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\林俊杰".replace("\\", "\\\\")))
+                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\林俊杰"))
         singer_path.add_command(label='李荣浩',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\李荣浩".replace("\\", "\\\\")))
+                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\李荣浩"))
         singer_path.add_command(label='Taylor Swift',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\Taylor Swift".replace("\\", "\\\\")))
+                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\Taylor Swift"))
         # 菜单项可自行添加
-        # th_path.add_command(label='', command=lambda: self.change_music_path(r"".replace("\\", "\\\\")))
+        # th_path.add_command(label='', command=lambda: self.change_music_path(r"xx\xx\xx"))
     
     # 更改文件夹(菜单项绑定操作)
     def change_music_path(self, path):
@@ -348,8 +367,7 @@ class SearchUI(object):
         hs = self.search_ui_root.winfo_screenheight()
         x = int((ws / 2) - (self.search_ui_width / 2))
         y = int((hs / 2) - (self.search_ui_height / 2))
-        self.search_ui_root.geometry(
-            '{}x{}+{}+{}'.format(self.search_ui_width, self.search_ui_height, x, y))
+        self.search_ui_root.geometry('{}x{}+{}+{}'.format(self.search_ui_width, self.search_ui_height, x, y))
 
     # 搜索(二级UI按钮绑定操作)
     def searching(self, song_name):  # QwQ: 此处song_name接收的参数的类型将是StringVar(tkinter模块中自带的数据类型)
@@ -425,14 +443,12 @@ class SearchUI(object):
         second_frame3.pack()
 
         # second_f1
-        label_folder_attention = tkinter.Label(second_frame1, text='当前文件夹(名):', font=("楷体", 10),
-                                               fg='black')
+        label_folder_attention = tkinter.Label(second_frame1, text='当前文件夹(名):', font=("楷体", 10), fg='black')
         label_folder_attention.grid(row=0, column=0)
         label_current_folder = tkinter.Label(second_frame1, text=os.path.basename(self.app.music_folder_path),
                                              font=("宋体", 14), fg='gray', anchor='w')
         label_current_folder.grid(row=0, column=1)
-        label_input_reminder = tkinter.Label(second_frame1, text='请输入歌曲/歌手名称:', font=("宋体", 12),
-                                             fg='black')
+        label_input_reminder = tkinter.Label(second_frame1, text='请输入歌曲/歌手名称:', font=("宋体", 12), fg='black')
         label_input_reminder.grid(row=1, column=0)  # QwQ: 用grid来使控件在同一行
         label_blank_left = tkinter.Label(second_frame1, text=' ')
         label_blank_left.grid(row=1, column=1)
@@ -442,8 +458,7 @@ class SearchUI(object):
         entry.grid(row=1, column=2)
         label_blank_right = tkinter.Label(second_frame1, text=' ')
         label_blank_right.grid(row=1, column=3)
-        button_searching = tkinter.Button(second_frame1, text='搜索',
-                                          command=lambda: self.searching(self.song_name))
+        button_searching = tkinter.Button(second_frame1, text='搜索', command=lambda: self.searching(self.song_name))
         button_searching.grid(row=1, column=4)
 
         # second_f2
@@ -468,16 +483,18 @@ class SearchUI(object):
         button_play.pack()
 
         # second_f3
-        label_use_attention = tkinter.Label(second_frame3,
-                                            text='注意事项:'
-                                                 '\n1.该功能仅限于在所添加的文件夹中搜索歌曲(序号按文件夹内顺序),而非爬虫!'
-                                                 '\n2.该搜索功能仅进行宽泛搜索,罗列,并不能精确导向.'
-                                                 '\n3.使用步骤: 输入搜索内容,点击所搜按钮,在所罗列的内容中用\n'
-                                                 '鼠标左键单击选定需要播放的歌曲,点击播放按钮即可.'
-                                                 '\n4.点击播放后,该搜索界面会自动关闭,如有二次需求请重新进入.'
-                                                 '\n5.并不是所有的音乐文件名都符合规范,为了好的体验请保持文件名格式为:'
-                                                 '\n歌曲名(歌曲信息)--歌手1&歌手2...(歌手信息).mp3',
-                                            font=("楷体", 12), fg='blue', anchor='w')
+        label_use_attention = tkinter.Label(
+            second_frame3,
+            text='注意事项:'
+            '\n1.该功能仅限于在所添加的文件夹中搜索歌曲(序号按文件夹内顺序),而非爬虫!'
+            '\n2.该搜索功能仅进行宽泛搜索,罗列,并不能精确导向.'
+            '\n3.使用步骤: 输入搜索内容,点击所搜按钮,在所罗列的内容中用\n'
+            '鼠标左键单击选定需要播放的歌曲,点击播放按钮即可.'
+            '\n4.点击播放后,该搜索界面会自动关闭,如有二次需求请重新进入.'
+            '\n5.并不是所有的音乐文件名都符合规范,为了好的体验请保持文件名格式为:'
+            '\n歌曲名(歌曲信息)--歌手1&歌手2...(歌手信息).mp3',
+            font=("楷体", 12), fg='blue', anchor='w'
+        )
         label_use_attention.pack()
 
         # 二级UI窗口关闭协议
@@ -523,7 +540,7 @@ class ChangeKeyPressProgramme(object):
 class IsOverMonitor(object):
     def __init__(self, app) -> None:
         self.app = app
-        self.thread_monitor = threading.Thread(target=self.is_over)
+        self.thread_monitor = threading.Thread(target=self.is_over, name='IsOverMonitor')
         self.thread_monitor.start()
 
     # 播放完成检测
@@ -538,9 +555,8 @@ class IsOverMonitor(object):
         # 按照一定时间间隔递归
         self.app.ui_root.after(3000, self.is_over)
 
+
 # 子线程 2 --键盘监听操作与键盘快捷方案
-
-
 class KeyboardListener(object):
 
     def __init__(self, app) -> None:
@@ -677,9 +693,55 @@ class KeyboardListener(object):
             pass
 
 
+# 子线程 3 --数据同步与保存
+class DateProtector(App):
+
+    def __init__(self, app) -> None:
+        #类对象传入
+        self.app = app
+
+        #线程绑定  daemon=True 设置该线程为保护线程,随主线程结束而退出
+        self.thread_date_protector = threading.Thread(target= self.callbackfunc, daemon=True, name='DateProtector')
+        self.thread_date_protector.start()
+  
+    
+    #同步数据到 jsdate <class 'dict'>
+    def synchronous_data(self):
+        try:
+            # jsdate[''] = 
+            jsdate['music_folder_path'] = self.app.music_folder_path
+            jsdate['current_music_number'] = self.app.current_music_number
+            jsdate['file_total_time'] = self.app.file_total_time
+            jsdate['current_position'] = self.app.player.time
+            jsdate['need_cycle'] = self.app.need_cycle
+            jsdate['key_press_programme'] = self.app.key_press_programme
+            jsdate['play_dict'] = self.app.play_dict
+            jsdate['current_music_name'] = os.path.basename(
+                self.app.play_dict.get(f'{self.app.current_music_number}'.replace('*', ''))).replace('.mp3', '')
+        except AttributeError:
+            #忽略部分属性不存在时带来的报错
+            pass
+        except TypeError:
+            print("TypeError!")
+        self.save_date()
+    
+    def callbackfunc(self):
+        while(True):
+            self.synchronous_data()
+            time.sleep(1)
+    #保存数据到 PlayerConfig.json
+    def save_date(self):
+        try:
+            # 打开json文件
+            with open(os.path.dirname(os.path.abspath(__file__)) + r'\PlayerConfig.json', 'w', encoding='utf-8') as configjson:
+                # json文件写入 ensure_ascii=False禁用Unicode转义确保写入的文件包含原始的非ASCII字符。
+                json.dump(jsdate, configjson, ensure_ascii=False, indent=4) 
+        except NameError:
+            print("NameError!: __file__ 不存在,请检查json文件的位置.")
+
+
 def main():
     app = App()
-    app.update_song_list()
     app.ui_root.mainloop()
 
 
