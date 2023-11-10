@@ -1,4 +1,36 @@
 {
+    "#1": "自行配置",
+    "music_folders_path": {
+        "folder1": {
+            "name": "️",
+            "path": "️"
+        },
+        "folder2": {
+            "name": "",
+            "path": ""
+        },
+        "folder3": {
+            "name": "",
+            "path": ""
+        },
+        "folder4": {
+            "name": "",
+            "path": ""
+        },
+        "folder5": {
+            "name": "",
+            "path": ""
+        },
+        "folder6": {
+            "name": "",
+            "path": ""
+        },
+        "folder7": {
+            "name": "",
+            "path": ""
+        }
+    },
+    "#2": "以下参数严禁更改!",
     "music_folder_path": "",
     "current_music_number": 0,
     "file_total_time": 0,
