@@ -36,6 +36,11 @@
 #### 2023/10/7
 3.3.3.优化了代码格式\
 主要变动:将一些抽象的代码简单化,格式化.
+#### 2023/11/10
+4.0.2将本地音乐文件夹路径配置设置在 *PlayerConfig.json* 文件
+|新增key|
+|---|
+|  *music_folders_path*  |
 
 
 ## add function:
@@ -81,6 +86,7 @@
 |  *"key_press_programme"*  |
 |  *"current_music_name"*  |
 |  *"play_dict"*  |
+
 
 
             
