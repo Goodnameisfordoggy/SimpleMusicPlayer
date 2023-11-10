@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2023-10-07 23:00:58
-version: 4.0.1
+LastEditTime: 2023-11-10 12:30:28
+version: 4.0.2
 FilePath: \python\py.1求道境\音乐随机播放器\LocalMusicPlayer.py
 Description: 
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
@@ -321,22 +321,21 @@ class ChangeFolderMenu(object):
         self.menu_change_folder_path.add_cascade(label='按歌手分类', menu=singer_path)
 
         # 三级下拉菜单(项) #在r后""中直接添加路径即可(以下为配置实例) QwQ: label为菜单项文本,语法格式:上一级菜单.add_command(这一级菜单的属性)
-        self_path.add_command(label='❤️',
-                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\❤️"))
-        self_path.add_command(label='总库',
-                              command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\总库"))
-        singer_path.add_command(label='薛之谦',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\薛之谦"))
-        singer_path.add_command(label='周杰伦',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\周杰伦"))
-        singer_path.add_command(label='林俊杰',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\林俊杰"))
-        singer_path.add_command(label='李荣浩',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\李荣浩"))
-        singer_path.add_command(label='Taylor Swift',
-                                command=lambda: self.change_music_path(r"C:\Users\HDJ\Music\歌曲\歌手\Taylor Swift"))
-        # 菜单项可自行添加
-        # th_path.add_command(label='', command=lambda: self.change_music_path(r"xx\xx\xx"))
+        self_path.add_command(label=jsdate['music_folders_path']['folder1']['name'],
+                              command=lambda: self.change_music_path(jsdate['music_folders_path']['folder1']['path']))
+        self_path.add_command(label=jsdate['music_folders_path']['folder2']['name'],
+                              command=lambda: self.change_music_path(jsdate['music_folders_path']['folder2']['path']))
+        singer_path.add_command(label=jsdate['music_folders_path']['folder3']['name'],
+                                command=lambda: self.change_music_path(jsdate['music_folders_path']['folder3']['path']))
+        singer_path.add_command(label=jsdate['music_folders_path']['folder4']['name'],
+                                command=lambda: self.change_music_path(jsdate['music_folders_path']['folder4']['path']))
+        singer_path.add_command(label=jsdate['music_folders_path']['folder5']['name'],
+                                command=lambda: self.change_music_path(jsdate['music_folders_path']['folder5']['path']))
+        singer_path.add_command(label=jsdate['music_folders_path']['folder6']['name'],
+                                command=lambda: self.change_music_path(jsdate['music_folders_path']['folder6']['path']))
+        singer_path.add_command(label=jsdate['music_folders_path']['folder7']['name'],
+                                command=lambda: self.change_music_path(jsdate['music_folders_path']['folder7']['path']))
+
     
     # 更改文件夹(菜单项绑定操作)
     def change_music_path(self, path):
@@ -387,10 +386,11 @@ class SearchUI(object):
                     # i = 0 #i表示图表的第几行,注意:第0行不是表头,而是表头下的第一行  # i若启用则为倒序展示搜索结果
                     self.treeview_search_result.insert(
                         '', 'end',  # QwQ: end表示每次添加到末尾,在此可视为正序展示搜索结果
-                        values=(key,
-                                # 保留"--"前面的歌曲名
-                                os.path.basename(self.app.play_dict[key]).replace(".mp3", '').split("--")[0],
-                                singer_name))
+                        values=(
+                            key,
+                            # 保留"--"前面的歌曲名
+                            os.path.basename(self.app.play_dict[key]).replace(".mp3", '').split("--")[0],
+                            singer_name))
                     # i += 1
             if num <= 0:
                 tkinter.messagebox.showwarning(title='搜素结束', message='很抱歉,没有找到歌曲')
@@ -540,7 +540,7 @@ class ChangeKeyPressProgramme(object):
 class IsOverMonitor(object):
     def __init__(self, app) -> None:
         self.app = app
-        self.thread_monitor = threading.Thread(target=self.is_over, name='IsOverMonitor')
+        self.thread_monitor = threading.Thread(target=self.is_over, daemon=True, name='IsOverMonitor')
         self.thread_monitor.start()
 
     # 播放完成检测
@@ -563,6 +563,7 @@ class KeyboardListener(object):
         self.app = app
         # pynput.keyboard.Listener可以创建新线程,并持续监听键盘
         self.thread_listen = pynput.keyboard.Listener(on_press=self.change_key_press_programme)
+        self.thread_listen.daemon = True # 守护线程
         self.thread_listen.start()
 
     # QwQ:当前阶段,键盘快捷方式仅用于主UI界面最小化时,或UI界面不在最顶层时.
@@ -694,7 +695,7 @@ class KeyboardListener(object):
 
 
 # 子线程 3 --数据同步与保存
-class DateProtector(App):
+class DateProtector(object):
 
     def __init__(self, app) -> None:
         #类对象传入
