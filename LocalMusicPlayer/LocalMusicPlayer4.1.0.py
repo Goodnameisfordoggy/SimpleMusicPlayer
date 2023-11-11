@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2023-11-11 21:25:09
+LastEditTime: 2023-11-11 22:55:48
 version: 4.1.0
 FilePath: \python\py.1求道境\音乐随机播放器\LocalMusicPlayer.py
 Description: 
@@ -420,8 +420,8 @@ class ChangeFolderMenu(object):
 # 歌曲搜索界面
 class SearchUI(QDialog):
 
-    def __init__(self, main_window, parent=None, width=1250, height=950) -> None:
-        super().__init__(parent, Qt.Window)
+    def __init__(self, main_window, width=1250, height=950) -> None:
+        super().__init__()
         #一级UI对象传入
         self.main_window = main_window
 
@@ -463,11 +463,9 @@ class SearchUI(QDialog):
         self.label_current_folder.setText(
             os.path.basename(jsdate['music_folder_path'])
         )
-        #self.main_window.showMinimized()
-        self.showNormal()
-        self.exec_()
-
-
+        self.show()
+        self.main_window.showMinimized()
+        
     # 二级UI窗口居中
     def center(self) -> None:
         frame_geometry = self.frameGeometry()
