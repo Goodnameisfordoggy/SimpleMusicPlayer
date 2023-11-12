@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2023-11-11 22:55:48
+LastEditTime: 2023-11-12 14:48:16
 version: 4.1.0
 FilePath: \python\py.1求道境\音乐随机播放器\LocalMusicPlayer.py
 Description: 
@@ -36,7 +36,7 @@ from PyQt5.QtWidgets import (
     QHeaderView, QMessageBox, QMenu, QAction, QDesktopWidget
     )
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QTimer
 
 # os.path.dirname(os.path.abspath(__file__))获取当前文件所在目录的绝对路径
 with open(
@@ -693,15 +693,15 @@ class ChangeKeyPressProgramme(object):
         #self.main_window.key_press_programme = programme_number
 
 
-# 子线程 1 --播放完毕检测
+# 子线程 --播放完毕检测
 class IsOverMonitor(object):
     def __init__(self, main_window) -> None:
         self.main_window = main_window
-        self.thread_monitor = threading.Thread( # daemon=True 设置该线程为守护线程,随主线程结束而退出 
-            target=self.is_over, daemon=True, name='IsOverMonitor'
-        )
-        self.thread_monitor.start()
-
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.is_over)  # 定时器触发时更新 UI
+        self.timer_interval = 1000  # 定时器间隔，单位是毫秒
+        self.timer.start(self.timer_interval)
+        
     # 播放完成检测
     def is_over(self) -> None:
         if self.main_window.player.time > self.main_window.file_total_time:
@@ -711,11 +711,10 @@ class IsOverMonitor(object):
                 self.main_window.play_song()
             else:
                 self.main_window.random_play()
-        # 按照一定时间间隔递归
-        #self.main_window.ui_root.after(3000, self.is_over)
+            
 
 
-# 子线程 2 --键盘监听操作与键盘快捷方案
+# 子线程 --键盘监听操作与键盘快捷方案
 class KeyboardListener(object):
 
     def __init__(self, main_window) -> None:
@@ -856,7 +855,7 @@ class KeyboardListener(object):
             pass
 
 
-# 子线程 3 --数据同步与保存
+# 子线程 --数据同步与保存
 class DateProtector(object):
 
     def __init__(self, main_window) -> None:
