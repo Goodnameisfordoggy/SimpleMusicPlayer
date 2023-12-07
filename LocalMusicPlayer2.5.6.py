@@ -1,11 +1,13 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2023-11-12 14:48:16
-version: 2.0.0
+LastEditTime: 2023-12-07 16:24:13
+version: 2.5.6
 FilePath: \python\py.1求道境\音乐随机播放器\LocalMusicPlayer.py
 Description: 
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
+其余参数可根据注释,慎重更改.
+
 				/*		写字楼里写字间，写字间里程序员；
 				*		程序人员写程序，又拿程序换酒钱。
 				*		酒醒只在网上坐，酒醉还来网下眠；
@@ -24,6 +26,8 @@ import re
 import threading
 import json
 import sys
+import functools
+import subprocess
 # 需要cmd安装
 import pyglet
 import pynput.keyboard
@@ -32,33 +36,46 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QDialog, QPushButton, QLabel, QLineEdit, QTreeWidget, QTreeWidgetItem, 
     QHeaderView, QMessageBox, QMenu, QAction, QDesktopWidget
     )
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import Qt, QRect, QTimer
+from PyQt5.QtGui import QIcon, QFont, QPixmap, QBrush, QPalette
+from PyQt5.QtCore import Qt, QTimer, QPoint
 
-# os.path.dirname(os.path.abspath(__file__))获取当前文件所在目录的绝对路径
+
+# 声明全局变量
+WORKING_DIRECTORY_PATH = os.path.dirname(os.path.abspath(__file__)) # 获取当前文件所在目录的绝对路径
+
 with open(
-    os.path.dirname(os.path.abspath(__file__)) + r'\PlayerConfig.json', 
+    WORKING_DIRECTORY_PATH + r'\PlayerConfig.json', 
     'r', encoding='utf-8'
 ) as configjson:
-    jsdate = json.load(configjson)
+    js_data = json.load(configjson)
+
+with open(
+    WORKING_DIRECTORY_PATH + r'\PlayerStyle.css', 
+    'r', encoding='utf-8' 
+) as playerstyle:
+    css_data = playerstyle.read()
+
 
 class ApplicationWindow(QMainWindow):
+    """ 
+    简单的本地播放器
 
+    主UI界面
+    """
     def __init__(self, width=1236, height=764) -> None:
         super().__init__()
         # 一级UI设置
         self.setWindowTitle("Music Player")
-        self.setWindowIcon(
-            QIcon(r"D:\Users\vscode\python\实验与验证2\音乐播放器图标.png")
-        )
-        #self.setWindowFlag(Qt.WindowStaysOnTopHint, True)# 一级UI界面的层次设置, False置于最底部, True置顶
+        self.setWindowIcon(QIcon(WORKING_DIRECTORY_PATH + r"\player.png"))
+        self.setWindowFlag(Qt.WindowStaysOnTopHint, True)# 一级UI界面的层次设置, False置于最底部, True置顶
         self.setFixedSize(width, height)  # 禁止修改窗口大小
+        #self.setWindowFlag(Qt.FramelessWindowHint)
 
         # 重要组件
         #self.button_pause_or_begin = None  # 暂停/开始按钮
-        #self.button_cycle = None  # 单曲循环按钮
-        #self.current_play_label = None  # 当前播放项展示标签
-        #self.menuBar = None  # 菜单栏
+        #self.button_single_loop = None  # 单曲循环按钮
+        #self.label_current_play_content = None  # 当前播放项展示标签
+        #self.menubar = None  # 菜单栏
 
         # 方法绑定
         self.build_platform()
@@ -66,24 +83,23 @@ class ApplicationWindow(QMainWindow):
 
         # 底层变量
         self.player = pyglet.media.Player()  # 播放器
-        self.music_folder_path = jsdate['music_folder_path'] # 获取音乐文件夹的绝对路径
-        self.play_dict = jsdate['play_dict']  # 播放字典
+        self.music_folder_path = js_data['music_folder_path'] # 获取音乐文件夹的绝对路径
+        self.play_dict = js_data['play_dict']  # 播放字典
         self.current_music_number = ( # 当前播放的音乐文件序号
-            jsdate['current_music_number'] 
-            if not isinstance(jsdate['current_music_number'], int) 
-            else f'*{jsdate['current_music_number']}*'
+            js_data['current_music_number'] 
+            if not isinstance(js_data['current_music_number'], int) 
+            else f'*{js_data['current_music_number']}*'
         )  
-        self.current_position = jsdate['current_position']  # 当前(文件的)播放位置
-        self.need_cycle = jsdate['need_cycle']  # 是否循环播放的标志
-        self.file_total_time = jsdate['file_total_time']  # 音乐文件总时长
-        self.key_press_programme = jsdate['key_press_programme'] # 键盘快捷方案序号
+        self.current_position = js_data['current_position']  # 当前(文件的)播放位置
+        self.need_cycle = js_data['need_cycle']  # 是否循环播放的标志
+        self.file_total_time = js_data['file_total_time']  # 音乐文件总时长
+        self.key_press_programme = js_data['key_press_programme'] # 键盘快捷方案序号
 
         #绑定线程
         self.is_over_monitor = IsOverMonitor(self)
-        self.listener = KeyboardListener(self)
-        self.dateprotector = DateProtector(self)
+        self.key_board_listener = KeyboardListener(self)
+        self.data_protector = DataProtector(self)
 
-    
     # 更新音乐列表
     def update_song_list(self) -> None:
         # 创建一个空字典
@@ -98,39 +114,43 @@ class ApplicationWindow(QMainWindow):
 
     # 播放音乐
     def play_song(self, music_position=0) -> None:
-        # 加载音乐文件
-        music_file_path = self.play_dict.get(f'{self.current_music_number}')
-        # 根据文件创建music对象
-        music = pyglet.media.load(music_file_path)
-        # 获取音频文件总时长
-        self.file_total_time = int(music.duration)
-        # 创建播放器
-        self.player = pyglet.media.Player()
-        # 将music对象添加到播放器(player)
-        self.player.queue(music)
-        # 调整播放位置
-        self.player.seek(music_position)
-        # 开始播放
-        self.player.play()
+        try:
+            # 加载音乐文件
+            music_file_path = self.play_dict.get(f'{self.current_music_number}')           
+        except TypeError:
+            QMessageBox.critical(self, '温馨提示', '切换文件夹后,请在查找界面选择歌曲或点击随机播放.')
+        else:
+            # 根据绝对路径创建音频文件的MediaSource对象
+            music = pyglet.media.load(music_file_path)
+            # 获取音频文件总时长
+            self.file_total_time = int(music.duration)
+            # 创建播放器
+            self.player = pyglet.media.Player()
+            # 将MediaSource对象添加到播放器(player)
+            self.player.queue(music)
+            # 调整播放位置
+            self.player.seek(music_position)
+            # 开始播放
+            self.player.play()
+            # 更改当前正在播放标签的文本
+            self.change_label_current_play_content()
 
     # 更改当前播放内容(标签绑定操作)
-    def change_current_play_label(self) -> None:
+    def change_label_current_play_content(self) -> None:
 
         music_file_path = self.play_dict.get(f'{self.current_music_number}')
         music_file_name = os.path.basename(music_file_path)
-        self.current_play_label.setText(music_file_name.replace('.mp3', ''))
+        self.label_current_play_content.setText(music_file_name.replace('.mp3', ''))
 
     # 随机播放(按钮绑定操作)
     def random_play(self) -> None:
         if self.current_music_number is not None:
             self.player.pause()
-            self.player.delete()
         if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
             self.current_music_number = int(
                 self.current_music_number.replace('*', '')
             )
         self.current_music_number = random.randint(1, len(self.play_dict))
-        self.change_current_play_label()
         self.play_song()
         # 按钮文本显示为"暂停"
         self.button_pause_or_begin.setText('暂停')
@@ -141,7 +161,6 @@ class ApplicationWindow(QMainWindow):
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
             self.player.pause()
-            self.player.delete()
             if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
                 self.current_music_number = int(
                     self.current_music_number.replace('*', '')
@@ -149,7 +168,6 @@ class ApplicationWindow(QMainWindow):
             self.current_music_number -= 1
             if self.current_music_number == 0:
                 self.current_music_number = len(self.play_dict)
-            self.change_current_play_label()
             self.play_song()
             # 按钮文本显示为"暂停"
             self.button_pause_or_begin.setText('暂停')
@@ -160,7 +178,6 @@ class ApplicationWindow(QMainWindow):
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
             self.player.pause()
-            self.player.delete()
             if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
                 self.current_music_number = int(
                     self.current_music_number.replace('*', '')
@@ -168,7 +185,6 @@ class ApplicationWindow(QMainWindow):
             self.current_music_number += 1
             if self.current_music_number > len(self.play_dict):
                 self.current_music_number = 1
-            self.change_current_play_label()
             self.play_song()
             # 按钮文本显示为"暂停"
             self.button_pause_or_begin.setText('暂停')
@@ -209,15 +225,12 @@ class ApplicationWindow(QMainWindow):
             if not self.need_cycle:
                 self.need_cycle = True
                 # 将文本更改为"cycling",按钮显示为凹陷
-                self.button_cycle.setText('cycling')
-                self.button_cycle.setStyleSheet("color: rosybrown;")
-                                                
+                self.button_single_loop.setText('cycling')                                                
             elif self.need_cycle:
                 self.need_cycle = False
                 # 将文本更改为"单曲循环",按钮显示为凸起
-                self.button_cycle.setText('单曲循环')
-                self.button_cycle.setStyleSheet("color: black;")
-                
+                self.button_single_loop.setText('单曲循环')
+
     # 确认退出(按钮绑定操作)
     def confirm_to_quit(self) -> None:
         reply = QMessageBox.question(
@@ -231,68 +244,84 @@ class ApplicationWindow(QMainWindow):
     def build_platform(self) -> None:
 
         # 创建主体文字标签
-        text_label = QLabel('Q*& 私人专属音乐播放工具 Qwq', parent=self)
-        text_label.setFont(QFont("楷体", 24))
-        text_label.setStyleSheet('color: red; font-weight: bold;')
-        text_label.setWordWrap(False)
-        text_label.setGeometry(180, 50, 1000, 100)
+        self.label_MainWindow_main_text = QLabel('Q*& 私人专属音乐播放工具 Qwq', parent=self)
+        self.label_MainWindow_main_text.setWordWrap(False)
+        self.label_MainWindow_main_text.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        self.label_MainWindow_main_text.setGeometry(18, 20, 1200, 100)
+        self.label_MainWindow_main_text.setObjectName("label--1_1")
+        self.label_MainWindow_main_text.setStyleSheet(css_data)    
             
 
         # F1 创建当前正在播放内容的显示器
         # "正在播放"标签
-        self.current_play_text = QLabel(text='正在播放:', parent=self)
-        self.current_play_text.setStyleSheet("color: gray;")
-        self.current_play_text.setFont(QFont("宋体", 16))
-        self.current_play_text.setWordWrap(False) # 禁止自动换行
-        self.current_play_text.setGeometry(200, 200, 200, 60)
+        self.label_current_play_text = QLabel(text='正在\n播放', parent=self)
+        self.label_current_play_text.setWordWrap(False) # 禁止自动换行
+        self.label_current_play_text.setGeometry(280, 290, 200, 80)
+        self.label_current_play_text.setObjectName("label--2_1")
+        self.label_current_play_text.setStyleSheet(css_data)
+
         # 显示当先正在播放歌曲名称的标签
-        self.current_play_label = QLabel(
-            text=jsdate['current_music_name'], parent=self
+        self.label_current_play_content = QLabel(
+            text=js_data['current_music_name'], parent=self
         )
-        self.current_play_label.setStyleSheet("color: gray;")
-        self.current_play_label.setFont(QFont("楷体", 10))
-        self.current_play_label.setWordWrap(True) # 允许自动换行 QwQ:这个很重要
-        self.current_play_label.setGeometry(410, 175, 700, 120)
-        self.current_play_label.setTextInteractionFlags( # 允许鼠标,键盘与标签文本交互
+        self.label_current_play_content.setWordWrap(True) # 允许自动换行 QwQ:这个很重要
+        self.label_current_play_content.setGeometry(410, 275, 700, 120)
+        self.label_current_play_content.setTextInteractionFlags( # 允许鼠标,键盘与标签文本交互
             Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard
         )
+        self.label_current_play_content.setContextMenuPolicy(Qt.NoContextMenu) # 阻止鼠标右键文本框呼出菜单
+        self.label_current_play_content.setObjectName("label--3_1")
+        self.label_current_play_content.setStyleSheet(css_data)
         # F2
         #上一首按钮
         self.button_previous = QPushButton(text='上一首', parent=self)
         self.button_previous.clicked.connect(self.previous_play)
         self.button_previous.setGeometry(400, 600, 150, 80)
         self.button_previous.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_previous.setObjectName("button--1")
+        self.button_previous.setStyleSheet(css_data) 
+
         #下一首按钮
         self.button_next = QPushButton(text='下一首', parent=self)
         self.button_next.clicked.connect(self.next_play)
         self.button_next.setGeometry(700, 600, 150, 80)
         self.button_next.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_next.setObjectName("button--2")
+        self.button_next.setStyleSheet(css_data) 
+
         #开始/暂停按钮
         self.button_pause_or_begin = QPushButton(text='开始', parent=self)
         self.button_pause_or_begin.clicked.connect(self.music_pause)
         self.button_pause_or_begin.setGeometry(550, 600, 150, 80)
         self.button_pause_or_begin.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_pause_or_begin.setObjectName("button--3")
+        self.button_pause_or_begin.setStyleSheet(css_data)       
 
         # F3
         # 随机播放按钮
-        self.button_shuffle = QPushButton(text='随机播放', parent=self)
-        self.button_shuffle.setGeometry(475, 520, 150, 80)
-        self.button_shuffle.clicked.connect(self.random_play)
-        self.button_shuffle.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_shuffle_play = QPushButton(text='随机播放', parent=self)
+        self.button_shuffle_play.setGeometry(475, 520, 150, 80)
+        self.button_shuffle_play.clicked.connect(self.random_play)
+        self.button_shuffle_play.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_shuffle_play.setObjectName("button--4")
+        self.button_shuffle_play.setStyleSheet(css_data) 
+
         # 单曲循环按钮
-        self.button_cycle = QPushButton(          
-            text=('单曲循环' if jsdate['need_cycle'] is False else 'cycling'), 
+        self.button_single_loop = QPushButton(          
+            text=('单曲循环' if js_data['need_cycle'] is False else 'cycling'), 
             parent=self
         )
-        self.button_cycle.clicked.connect(self.single_cycle_play)
-        self.button_cycle.setStyleSheet( # 注意setStyleSheet只接受一个字符串
-            ("color: black;" if jsdate['need_cycle'] is False 
+        self.button_single_loop.clicked.connect(self.single_cycle_play)
+        self.button_single_loop.setStyleSheet( # 注意setStyleSheet只接受一个字符串
+            ("color: black;" if js_data['need_cycle'] is False 
             else "color: rosybrown;"
             ) 
-            #("border: 1px solid black;" if jsdate['need_cycle'] is False else "border: 1px solid rosybrown;")            
+            #("border: 1px solid black;" if js_data['need_cycle'] is False else "border: 1px solid rosybrown;")            
         )
-        self.button_cycle.setGeometry(625, 520, 150, 80)
-        self.button_cycle.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_single_loop.setGeometry(625, 520, 150, 80)
+        self.button_single_loop.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
+        self.button_single_loop.setObjectName("button--5")
+        self.button_single_loop.setStyleSheet(css_data) 
  
         # F4
         # 退出按钮
@@ -300,28 +329,44 @@ class ApplicationWindow(QMainWindow):
         self.button_quit.clicked.connect(self.confirm_to_quit)
         self.button_quit.setGeometry(0, 735, 50, 30)
         self.button_quit.setFocusPolicy(Qt.NoFocus) # 阻止按钮获得键盘焦点
-        # 提示标签
-        self.label_warning = QLabel(
+        self.button_quit.setObjectName("button--8")
+        self.button_quit.setStyleSheet(css_data) 
+
+        # 警告标签
+        self.label_warning_text = QLabel(
             '请不要点击过快,UI响应需要时间!此工具仅用于学术交流!',
             parent=self
         )
-        self.label_warning.setFont(QFont("楷体", 10))
-        self.label_warning.setStyleSheet('color: blue;')
-        self.label_warning.setWordWrap(False) # 禁止自动换行
-        self.label_warning.setGeometry(250, 680, 800, 100)
+        self.label_warning_text.setAlignment(Qt.AlignCenter) 
+        self.label_warning_text.setWordWrap(False) # 禁止自动换行
+        self.label_warning_text.setGeometry(250, 680, 800, 100)
+        self.label_warning_text.setObjectName("label--4_1")
+        self.label_warning_text.setStyleSheet(css_data)
+
+        # F5(背景图片)
+        pixmap = QPixmap(WORKING_DIRECTORY_PATH + r"\Golden Buddha.png")
+        scaled_pixmap = pixmap.scaled(
+            self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+        )
+        palette = self.palette()
+        palette.setBrush(QPalette.Window, QBrush(scaled_pixmap))
+        self.setPalette(palette)
 
         # 菜单设置
         # 菜单栏
-        self.menuBar = self.menuBar()  # 创建菜单栏对象
-        self.menuBar.setFixedHeight(40)
+        self.menubar = self.menuBar()  # 创建菜单栏对象
+        self.menubar.setFixedHeight(40)
+        self.menubar.setObjectName('menubar--1')
+        self.menubar.setStyleSheet(css_data)
 
         #一级菜单创建操作
+        menu_setting = SettingMenu(self)
 
         menu_chang_folder_path = ChangeFolderMenu(self)
 
         menu_search_for_target_song = SearchUI(self)
         
-        menu_change_key_press_programme = ChangeKeyPressProgramme(self)
+        menu_change_key_press_programme = ChangeKeyPressProgrammeMenu(self)
 
     # 主UI界面窗口位置居中
     def center(self) -> None:
@@ -330,93 +375,32 @@ class ApplicationWindow(QMainWindow):
         frame_geometry.moveCenter(desktop_center)
         self.move(frame_geometry.topLeft())
 
-# 菜单--更改文件夹操作
-class ChangeFolderMenu(object):
+    # 窗口跟随鼠标移动(单击拖动窗口)
+    # 方法重写 
+    def mousePressEvent(self, event):
+        # 记录鼠标按下时的位置
+        self.drag_start_position = event.globalPos()
+    # 方法重写 
+    def mouseMoveEvent(self, event):
+        if hasattr(self, 'drag_start_position'):
+            # 计算鼠标移动的距离
+            delta = event.globalPos() - self.drag_start_position
+
+            # 更新窗口位置
+            new_position = self.pos() + delta
+            self.move(new_position)
+
+            # 更新起始位置，以便下一次移动计算
+            self.drag_start_position = event.globalPos()
+    # 方法重写
+    def mouseReleaseEvent(self, event):
+        # 鼠标释放时清空起始位置
+        if hasattr(self, 'drag_start_position'):
+            delattr(self, 'drag_start_position')
 
 
-    def __init__(self, main_window) -> None:
-        # 一级UI对象传入
-        self.main_window = main_window
-        # 方法绑定
-        self.build_menu()
-        # 底层变量
-        self.menu_change_folder_path = None  # 一级菜单对象
-
-    def build_menu(self) -> None:
-        # 一级菜单
-        self.menu_change_folder_path = QMenu('更改文件夹', self.main_window)
-
-        # 二级菜单
-        self_path = QMenu('自定义歌单', self.main_window)
-        singer_path = QMenu('按歌手分类', self.main_window)
-
-        # 三级下拉菜单(项) 
-        self_path_action_1 = QAction(
-            jsdate['music_folders_path']['folder1']['name'], 
-            self.main_window)
-        self_path_action_1.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder1']['path']))
-        self_path_action_2 = QAction(
-            jsdate['music_folders_path']['folder2']['name'], 
-            self.main_window)
-        self_path_action_2.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder2']['path']))
-
-
-        singer_path_action_1 = QAction(
-            jsdate['music_folders_path']['folder3']['name'], 
-            self.main_window)
-        singer_path_action_1.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder3']['path']))
-        singer_path_action_2 = QAction(
-            jsdate['music_folders_path']['folder4']['name'], 
-            self.main_window)
-        singer_path_action_2.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder4']['path']))
-        singer_path_action_3 = QAction(
-            jsdate['music_folders_path']['folder5']['name'], 
-            self.main_window)
-        singer_path_action_3.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder5']['path']))
-        singer_path_action_4 = QAction(
-            jsdate['music_folders_path']['folder6']['name'], 
-            self.main_window)
-        singer_path_action_4.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder6']['path']))
-        singer_path_action_5 = QAction(
-            jsdate['music_folders_path']['folder7']['name'], 
-            self.main_window)
-        singer_path_action_5.triggered.connect(
-            lambda: self.change_music_path(
-                jsdate['music_folders_path']['folder7']['path']))
-        
-        # 向二级菜单添加三级菜单(action)
-        self_path.addAction(self_path_action_1)
-        self_path.addAction(self_path_action_2)
-        singer_path.addAction(singer_path_action_1)
-        singer_path.addAction(singer_path_action_2)
-        singer_path.addAction(singer_path_action_3)
-        singer_path.addAction(singer_path_action_4)
-        singer_path.addAction(singer_path_action_5)
-        # 向一级菜单添加二级菜单
-        self.menu_change_folder_path.addMenu(self_path)
-        self.menu_change_folder_path.addMenu(singer_path)
-        # 向菜单栏添加一级菜单
-        self.main_window.menuBar.addMenu(self.menu_change_folder_path)
-    # 更改文件夹(菜单项绑定操作)
-    def change_music_path(self, path) -> None:
-        self.main_window.music_folder_path = path
-        self.main_window.update_song_list()
-
-# 歌曲搜索界面
 class SearchUI(QDialog):
-
+    """ 歌曲搜索界面 """
     def __init__(self, main_window, width=1250, height=950) -> None:
         super().__init__()
         #一级UI对象传入
@@ -425,7 +409,10 @@ class SearchUI(QDialog):
         # 设置二级UI
         self.setWindowTitle("歌曲查询中...")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
-
+        self.setWindowIcon(
+            QIcon(WORKING_DIRECTORY_PATH + r"\Beauty With Headset.png")
+        )
+        #self.setWindowFlag(Qt.FramelessWindowHint)
         # 方法绑定
         self.build_search_platform()
         self.build_menu()
@@ -433,7 +420,7 @@ class SearchUI(QDialog):
         
         # 重要组件
         #self.menu_search_for_target_song = None # 一级菜单对象
-        #self.song_name_qlineEdit = None  # 输入歌曲查找信息的单行文本输入框
+        #self.lineEdit_input_song_title = None  # 输入歌曲查找信息的单行文本输入框
         #self.input_song_name = None # 输入框的内容
         #self.treeview_search_result = None  # 展示搜索结果的树型图
 
@@ -454,11 +441,11 @@ class SearchUI(QDialog):
         self.menu_search_for_target_song.addAction(entry_action)
 
         # 向菜单栏添加一级菜单
-        self.main_window.menuBar.addMenu(self.menu_search_for_target_song)
+        self.main_window.menubar.addMenu(self.menu_search_for_target_song)
 
     def exec_rewrite(self):
         self.label_current_folder.setText(
-            os.path.basename(jsdate['music_folder_path'])
+            os.path.basename(js_data['music_folder_path'])
         )
         self.show()
         self.main_window.showMinimized()
@@ -472,7 +459,7 @@ class SearchUI(QDialog):
 
     # 搜索(二级UI按钮绑定操作)
     def searching(self, input_song_name) -> None:  
-        input_song_name = self.song_name_qlineEdit.text()
+        input_song_name = self.lineEdit_input_song_title.text()
         if len(input_song_name) > 0:  
             self.treeview_search_result.clear()  # 清除图表所有项
             num = 0
@@ -541,7 +528,7 @@ class SearchUI(QDialog):
             if self.main_window.current_music_number is not None:
                 self.main_window.player.pause()
                 self.main_window.player.delete()
-            self.main_window.change_current_play_label()
+            #self.main_window.change_label_current_play_content()
             self.main_window.play_song()
             # 按钮文本显示为"暂停"
             self.main_window.button_pause_or_begin.setText('暂停')
@@ -554,48 +541,57 @@ class SearchUI(QDialog):
 
     def build_search_platform(self) -> None:
         # 主体标签设置
-        main_label = QLabel(text='@ 歌曲查找界面 #', parent=self)
-        main_label.setFont(QFont("楷体", 20))
-        main_label.setStyleSheet('color: red; font-weight: bold;')
-        main_label.setGeometry(400, 0, 1000, 100)
+        self.label_SearchUI_main_text = QLabel(text='@ 歌曲查找界面 #', parent=self)
+        self.label_SearchUI_main_text.setGeometry(400, 0, 1000, 100)
+        self.label_SearchUI_main_text.setObjectName("label--5_1")
+        self.label_SearchUI_main_text.setStyleSheet(css_data)    
     
         # F1
-        label_folder_attention = QLabel(text='当前文件夹(库名):', parent=self)
-        label_folder_attention.setFont(QFont("楷体", 10))
-        label_folder_attention.setStyleSheet('color: gray; font-weight: bold;')
-        label_folder_attention.setGeometry(150, 100, 250, 60)
+        # "当前文件夹(库名):"标签
+        self.label_folder_path_text = QLabel(text='当前文件夹(库名):', parent=self)
+        self.label_folder_path_text.setGeometry(150, 100, 350, 60)
+        self.label_folder_path_text.setObjectName("label--6_1")
+        self.label_folder_path_text.setStyleSheet(css_data)  
+        
 
+        # 显示当前文件夹路径的标签
         self.label_current_folder = QLabel(
-            text=os.path.basename(jsdate['music_folder_path']), parent=self
+            text=os.path.basename(js_data['music_folder_path']), parent=self
         )
         self.label_current_folder.setWordWrap(True)
-        self.label_current_folder.setFont(QFont("宋体", 14))
-        self.label_current_folder.setStyleSheet('color: gray; font-weight: bold;')
-        self.label_current_folder.setGeometry(400, 100, 600, 60)
+        self.label_current_folder.setGeometry(450, 100, 600, 60)
+        self.label_current_folder.setObjectName("label--7_1")
+        self.label_current_folder.setStyleSheet(css_data)  
 
-        label_input_reminder = QLabel(text='请输入歌曲/歌手名称:', parent=self)
-        label_input_reminder.setFont(QFont("宋体", 12))
-        label_input_reminder.setStyleSheet('color: black; font-weight: bold;')
-        label_input_reminder.setGeometry(100, 160, 350, 60)
+        # 输入提示文本
+        self.label_input_reminder_text = QLabel(text='请输入歌曲/歌手名称:', parent=self)
+        self.label_input_reminder_text.setGeometry(100, 160, 350, 60)
+        self.label_input_reminder_text.setObjectName("label--8_1")
+        self.label_input_reminder_text.setStyleSheet(css_data) 
 
         # 输入框
-        self.song_name_qlineEdit = QLineEdit(parent=self)
-        self.song_name_qlineEdit.setPlaceholderText('输入信息,点击搜素') 
-        self.song_name_qlineEdit.setGeometry(450, 160, 450, 60) 
+        self.lineEdit_input_song_title = QLineEdit(parent=self)
+        self.lineEdit_input_song_title.setPlaceholderText('输入信息,点击搜索') 
+        self.lineEdit_input_song_title.setGeometry(450, 160, 450, 60) 
+        self.lineEdit_input_song_title.setStyleSheet("background-color: rgba(200, 200, 200, 128)")
+        self.lineEdit_input_song_title.setObjectName("QLineEdit--1")
+        self.lineEdit_input_song_title.setStyleSheet(css_data)
 
-        # "搜索"按钮
-        button_searching = QPushButton(text='搜索', parent=self)
-        button_searching.setFont(QFont('宋体', 20))
-        button_searching.setStyleSheet("color: purple;")
-        button_searching.setGeometry(900, 160, 100, 60)
-        button_searching.clicked.connect(
-            lambda: self.searching(self.song_name_qlineEdit.text())
+        # 搜索按钮
+        self.button_searching = QPushButton(text='搜索', parent=self)
+        self.button_searching.setGeometry(900, 160, 100, 60)
+        self.button_searching.clicked.connect(
+            lambda: self.searching(self.lineEdit_input_song_title.text())
         )
-        # F2 (树形图)
-        self.treeview_search_result = QTreeWidget(self)    
+        self.button_searching.setObjectName("button--6")
+        self.button_searching.setStyleSheet(css_data)
+
+        # F2 (用于显示搜索结果的树形图)
+        self.treeview_search_result = QTreeWidget(self)
         self.treeview_search_result.setGeometry(100, 250, 1000, 300)
         # 树型视图表头文本设置
         self.treeview_search_result.setHeaderLabels(["序号", "歌曲名称", "歌手"])
+        self.treeview_search_result.setHeaderHidden(True) # 隐藏表头
         # 禁止拖拽表头
         self.treeview_search_result.header().setSectionsMovable(False)
         # 禁止拉伸表头
@@ -604,22 +600,25 @@ class SearchUI(QDialog):
         self.treeview_search_result.header().setSectionResizeMode(2, QHeaderView.Fixed)
         # 设置列宽
         self.treeview_search_result.setColumnWidth(0, 120)
-        self.treeview_search_result.setColumnWidth(1, 600)
+        self.treeview_search_result.setColumnWidth(1, 650)
         self.treeview_search_result.setColumnWidth(2, 340)
-
+        # 设置样式
+        self.treeview_search_result.setObjectName("treeview--1")
+        self.treeview_search_result.setStyleSheet(css_data)
         # 鼠标单击(点击操作绑定)
         self.treeview_search_result.itemClicked.connect(self.onclick)
 
 
-        # "播放"按钮
-        button_play = QPushButton(text='播放', parent=self)
-        button_play.setFont(QFont('宋体', 20))
-        button_play.setStyleSheet("color: purple;")
-        button_play.setGeometry(570, 550, 100, 60)
-        button_play.clicked.connect(self.search_ui_play)        
+        # 播放所选歌曲按钮
+        self.button_play_selected_song = QPushButton(text='播放', parent=self)
+        self.button_play_selected_song.setStyleSheet("color: white; background-color: rgba(100, 100, 100, 128)")
+        self.button_play_selected_song.setGeometry(570, 550, 100, 60)
+        self.button_play_selected_song.clicked.connect(self.search_ui_play)     
+        self.button_play_selected_song.setObjectName("button--7")
+        self.button_play_selected_song.setStyleSheet(css_data)   
 
-        # F3
-        label_use_attention = QLabel(
+        # F3 注意事项文本标签
+        self.label_use_attention_text = QLabel(
             text='注意事项:'
             '\n1.该功能仅限于在所添加的文件夹中搜索歌曲(序号按文件夹内顺序),而非爬虫!'
             '\n2.该搜索功能仅进行宽泛搜索,罗列,并不能精确导向.'
@@ -630,10 +629,17 @@ class SearchUI(QDialog):
             '\n歌曲名(歌曲信息)--歌手1&歌手2...(歌手信息).mp3',
             parent=self
         )
-        label_use_attention.setFont(QFont("楷体", 8))
-        label_use_attention.setStyleSheet('color: blue; font-weight: bold;')
-        label_use_attention.setAlignment(Qt.AlignLeft)
-        label_use_attention.setGeometry(110, 650, 1200, 300)
+        self.label_use_attention_text.setAlignment(Qt.AlignLeft)
+        self.label_use_attention_text.setGeometry(110, 650, 1200, 300)
+        self.label_use_attention_text.setObjectName("label--9_1")
+        self.label_use_attention_text.setStyleSheet(css_data) 
+        
+        # F4 (背景图片)
+        pixmap = QPixmap(WORKING_DIRECTORY_PATH + r"\Beauty With Headset.png")
+        scaled_pixmap = pixmap.scaled(self.size(), Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+        palette = self.palette()
+        palette.setBrush(QPalette.Window, QBrush(scaled_pixmap))
+        self.setPalette(palette)
 
     # 二级UI窗口关闭方法重写
     def closeEvent(self, event) -> None:
@@ -644,12 +650,55 @@ class SearchUI(QDialog):
         super().closeEvent(event)
 
 
-class ChangeKeyPressProgramme(object):
-
+class ChangeFolderMenu(object):
+    """ 一级菜单--更改文件夹操作 """
     def __init__(self, main_window) -> None:
         # 一级UI对象传入
         self.main_window = main_window
+        # 底层变量
+        self.menu_change_folder_path = None  # 一级菜单对象
+        # 方法绑定
+        self.build_menu()
 
+    def build_menu(self) -> None:
+        # 一级菜单
+        self.menu_change_folder_path = QMenu('更改文件夹', self.main_window)
+
+        # 构建菜单
+        # 在js_data的music_folders_path中找到所有一级菜单名
+        secmenu_names = [js_secmenu[0] for js_secmenu in js_data["music_folders_path"]]        
+        # 以二级菜单个数作为循环结束条件
+        for i in range(0, len(js_data["music_folders_path"])):
+            # 创建二级菜单 
+            secmenu = QMenu(secmenu_names[i], self.main_window) 
+            # 在js_data的music_folders_path中找到当先二级菜单下的所有三级菜单列表
+            actions = js_data["music_folders_path"][i][1:]
+            # 创建三级菜单
+            for action_name, action_path in actions:
+                if isinstance(action_name, str) and isinstance(action_path, str):
+                    action = QAction(f'{action_name}',  self.main_window)
+                    # 使用functools.partial动态的传递参数
+                    action.triggered.connect(functools.partial(self.change_music_path, action_path))
+                    # 将三级菜单添加到二级菜单
+                    secmenu.addAction(action)
+            # 将二级菜单添加到一级菜单
+            self.menu_change_folder_path.addMenu(secmenu)
+
+        # 向菜单栏添加一级菜单
+        self.main_window.menubar.addMenu(self.menu_change_folder_path)
+        
+    # 更改文件夹(菜单项绑定操作)
+    def change_music_path(self, path:str) -> None:
+        self.main_window.music_folder_path = path
+        self.main_window.update_song_list()
+
+
+class ChangeKeyPressProgrammeMenu(object):
+    """ 一级菜单--更改键盘快捷方案操作"""
+    def __init__(self, main_window) -> None:
+        # 一级UI对象传入
+        self.main_window = main_window
+        # 底层变量
         self.menu_change_key_press_programme = None
         # 方法绑定
         self.build_menu()
@@ -683,37 +732,116 @@ class ChangeKeyPressProgramme(object):
         self.menu_change_key_press_programme.addAction(default_action_5)
 
         #向菜单栏添加一级菜单
-        self.main_window.menuBar.addMenu(self.menu_change_key_press_programme)
+        self.main_window.menubar.addMenu(self.menu_change_key_press_programme)
 
         #绑定操作(可以被setattr()替换)
     #def change_key_press_programme(self, programme_number):
         #self.main_window.key_press_programme = programme_number
 
 
-# 子线程 --播放完毕检测
+class SettingMenu(object):
+    """ 一级菜单--设置"""
+    def __init__(self, main_window) -> None:
+        # 一级UI对象传入
+        self.main_window = main_window
+        # 底层变量
+        self.menu_setting = None  # 一级菜单对象
+        # 方法绑定
+        self.bulid_menu()
+    
+    def bulid_menu(self) -> None:
+        # 创建一级菜单
+        self.menu_setting = QMenu("⚙️", self.main_window)
+        
+        configuration_files_menu = self.ConfigurationFilesMenu(self)
+
+###############################################################################
+        # 创建二级菜单(样式选择)
+        secmenu_style_selection = QMenu(" ❖", self.main_window)
+
+        # 将二级菜单(样式选择)添加到一级菜单
+        self.menu_setting.addMenu(secmenu_style_selection)
+
+
+        # 将一级菜单添加到菜单栏
+        self.main_window.menubar.addMenu(self.menu_setting)
+
+
+    class ConfigurationFilesMenu(object):
+        """ 
+        二级菜单--配置文件
+
+        提供打开配置文件的操作
+        """
+        def __init__(self, setting_menu) -> None:
+            # 一级菜单SettingMenu对象传入
+            self.setting_menu = setting_menu
+            # 一级UI对象
+            #self.setting_menu.main_window
+            # 底层变量
+            self.secmenu_setting_files = None # 二级菜单对象
+            # 方法绑定
+            self.build_menu()
+
+        def build_menu(self) -> None:
+            # 创建二级菜单
+            self.secmenu_setting_files = QMenu("📖", self.setting_menu.main_window)
+            # 创建三级菜单
+            action_json = QAction("📄json", self.setting_menu.main_window)
+            action_json.triggered.connect(
+                lambda: self.open_selected_file(
+                    WORKING_DIRECTORY_PATH + r'\PlayerConfig.json'
+                ))
+            action_css = QAction("📄css", self.setting_menu.main_window)
+            action_css.triggered.connect(
+                lambda: self.open_selected_file(
+                    WORKING_DIRECTORY_PATH + r'\PlayerStyle.css'
+                ))
+            # 将三级菜单添加到二级菜单
+            self.secmenu_setting_files.addAction(action_json)
+            self.secmenu_setting_files.addAction(action_css)
+            # 将二级菜单添加到一级菜单
+            self.setting_menu.menu_setting.addMenu(self.secmenu_setting_files)
+
+        def open_selected_file(self, file_path) -> None:
+            try:
+                # 使用系统默认程序打开文件
+                os.startfile(file_path)
+            except FileNotFoundError:
+                QMessageBox.critical(
+                    self.main_window, 
+                    'FileNotFoundError', '文件不存在,请检查文件位置', 
+                    QMessageBox.Ok
+                )
+
+
 class IsOverMonitor(object):
+    """ 子线程--播放完毕检测 """
     def __init__(self, main_window) -> None:
         self.main_window = main_window
         self.timer = QTimer()
-        self.timer.timeout.connect(self.is_over)  # 定时器触发时更新 UI
+        self.timer.timeout.connect(self.which_play)  # 绑定方法
         self.timer_interval = 1000  # 定时器间隔，单位是毫秒
         self.timer.start(self.timer_interval)
         
     # 播放完成检测
-    def is_over(self) -> None:
+    def is_over(self) -> bool:
         if self.main_window.player.time > self.main_window.file_total_time:
             print("Next")
-            time.sleep(2)
-            if self.main_window.need_cycle:
-                self.main_window.play_song()
-            else:
-                self.main_window.random_play()
+            return True
+        
+    # 播放完成后播放方式的选择
+    def which_play(self) -> None:
+            if self.is_over():
+                time.sleep(2)
+                if self.main_window.need_cycle:
+                    self.main_window.play_song()
+                else:
+                    self.main_window.random_play()
             
 
-
-# 子线程 --键盘监听操作与键盘快捷方案
 class KeyboardListener(object):
-
+    """ 子线程 --键盘监听操作与键盘快捷方案 """
     def __init__(self, main_window) -> None:
         self.main_window = main_window
         # pynput.keyboard.Listener可以创建新线程,并持续监听键盘
@@ -852,64 +980,68 @@ class KeyboardListener(object):
             pass
 
 
-# 子线程 --数据同步与保存
-class DateProtector(object):
-
+class DataProtector(object):
+    """ 子线程 --数据同步与保存 """
     def __init__(self, main_window) -> None:
         #类对象传入
         self.main_window = main_window
 
         #线程绑定  
-        self.thread_date_protector = threading.Thread( # daemon=True 设置该线程为守护线程,随主线程结束而退出
-            target= self.callbackfunc, daemon=True, name='DateProtector'
+        self.thread_data_protector = threading.Thread( # daemon=True 设置该线程为守护线程,随主线程结束而退出
+            target= self.callbackfunc, daemon=True, name='DataProtector'
         )
-        self.thread_date_protector.start()
+        self.thread_data_protector.start()
   
     
-    #同步数据到 jsdate <class 'dict'>
+    #同步数据到 js_data <class 'dict'>
     def synchronous_data(self) -> None:
         try:
-            # jsdate[''] = 
-            jsdate['music_folder_path'] = self.main_window.music_folder_path
-            jsdate['current_music_number'] = self.main_window.current_music_number
-            jsdate['file_total_time'] = self.main_window.file_total_time
-            jsdate['current_position'] = self.main_window.player.time
-            jsdate['need_cycle'] = self.main_window.need_cycle
-            jsdate['key_press_programme'] = self.main_window.key_press_programme
-            jsdate['play_dict'] = self.main_window.play_dict
-            jsdate['current_music_name'] = os.path.basename(
+            js_data['music_folder_path'] = self.main_window.music_folder_path
+            js_data['current_music_number'] = self.main_window.current_music_number
+            js_data['file_total_time'] = self.main_window.file_total_time
+            js_data['current_position'] = self.main_window.player.time
+            js_data['need_cycle'] = self.main_window.need_cycle
+            js_data['key_press_programme'] = self.main_window.key_press_programme
+            js_data['play_dict'] = self.main_window.play_dict
+            js_data['current_music_name'] = os.path.basename(
                 self.main_window.play_dict.get(
                     f'{self.main_window.current_music_number}'.replace('*', '')
                 )
             ).replace('.mp3', '')
+            
         except AttributeError:
             # 忽略部分属性不存在时带来的报错
-            pass
+            print("AttributeError!")
         except TypeError:
-            # 保证在配置文件更改后程序继续运行
+            # 或略配置文件中数据的类型变化,保证在配置文件更改后DataProtector继续运行
             print("TypeError!")
-        self.save_date()
+        self.save_data()
     
     def callbackfunc(self) -> None:
         while(True):
             self.synchronous_data()
             time.sleep(1)
+            
     #保存数据到 PlayerConfig.json
-    def save_date(self) -> None:
+    def save_data(self) -> None:
         try:
             # 打开json文件
             with open(
-                os.path.dirname(os.path.abspath(__file__)) + r'\PlayerConfig.json', 
+                WORKING_DIRECTORY_PATH + r'\PlayerConfig.json', 
                 'w', encoding='utf-8'
             ) as configjson:
                 # json文件写入 ensure_ascii=False禁用Unicode转义确保写入的文件包含原始的非ASCII字符。
-                json.dump(jsdate, configjson, ensure_ascii=False, indent=4) 
+                json.dump(js_data, configjson, ensure_ascii=False, indent=4) 
         except NameError:
-            print("NameError!: __file__ 不存在,请检查json文件的位置.")
+            print("NameError!: 请检查json文件的位置.")
 
 
-if __name__ == '__main__':
+def main():
     app = QApplication(sys.argv) # 可操作命令行参数
     window = ApplicationWindow()
     window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()
