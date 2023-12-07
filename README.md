@@ -4,8 +4,8 @@
 #### project start at 2023/6/14
 
 ## GUI图片
-![GUI1](GUI1.png)
-![GUI2](GUI2.png)
+![GUI1](GUI1.3.png)
+![GUI2](GUI2.3.png)
 
 
 #### 2023/6/19
