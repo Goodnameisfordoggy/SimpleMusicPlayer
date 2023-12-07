@@ -1,12 +1,15 @@
-# 版本更新日志
+# GUI图片
 
-#### Update log:
-#### project start at 2023/6/14
+<!-- <img src="GUI1.3.png" alt="GUI1" style="max-width:80%; height:auto;">
+<img src="GUI2.3.png" alt="GUI2" style="max-width:80%; height:auto;"> -->
 
-## GUI图片
-![GUI1](GUI1.3.png)
-![GUI2](GUI2.3.png)
+![GUI1](GUI1.3.png){: width="60%"}
+![GUI2](GUI2.3.png){: width="60%"}
 
+# Update log:
+
+#### start
+project start at 2023/6/14
 
 #### 2023/6/19
 1.0.0.has been finished 
@@ -134,6 +137,9 @@ BUG描述: 歌曲正在播放时切换文件夹后连续点击 *开始/暂停按
 2.5.6.优化了代码结构.\
 原理: 将访问配置文件的相关操作封装到 *ConfigurationFilesMenu <class 'type'>* (*SettingMenu <class 'type'>* 的内部类)
     
+
+待解决问题: 每次切歌内存占用增加
+
 
 
 
