@@ -3,8 +3,8 @@
 <!-- <img src="GUI1.3.png" alt="GUI1" style="max-width:80%; height:auto;">
 <img src="GUI2.3.png" alt="GUI2" style="max-width:80%; height:auto;"> -->
 
-![GUI1](GUI1.3.png){: width="60%"}
-![GUI2](GUI2.3.png){: width="60%"}
+![GUI1](GUI1.3.png)
+![GUI2](GUI2.3.png)
 
 # Update log:
 
