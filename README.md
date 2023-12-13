@@ -88,6 +88,7 @@ SearchUI主体标签设置|*label_SearchUI_main_text*
 #### 2023/10/7
 1.14.9.添加了本地数据保存功能.\
 原理: 使用 *PlayerConfig.json* 文件进行部分底层数据的初始化,以及一些关键数据的储存.
+
 | 新增key|
 |----|
 |  *"music_folder_path"*  |
@@ -98,6 +99,7 @@ SearchUI主体标签设置|*label_SearchUI_main_text*
 |  *"key_press_programme"*  |
 |  *"current_music_name"*  |
 |  *"play_dict"*  |
+
 1.13.9.优化了代码格式\
 主要变动: 将全部抽象的代码简单化,格式化.
 #### 2023/9/29
