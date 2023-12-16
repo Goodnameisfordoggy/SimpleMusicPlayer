@@ -1,13 +1,11 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2023-12-13 14:41:52
-version: 2.6.9
+LastEditTime: 2023-12-16 21:54:47
+version: 2.7.11
 FilePath: \python\py.1求道境\音乐随机播放器\LocalMusicPlayer.py
 Description: 
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
-其余参数可根据注释,慎重更改.
-
 				/*		写字楼里写字间，写字间里程序员；
 				*		程序人员写程序，又拿程序换酒钱。
 				*		酒醒只在网上坐，酒醉还来网下眠；
@@ -26,25 +24,24 @@ import re
 import threading
 import json
 import sys
-import functools
-import typing
 # 需要cmd安装
 import pyglet
 import pynput.keyboard
 import keyboard
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QDialog, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView, QMessageBox, 
-    QMenu, QAction
+    QApplication, QMainWindow, QDialog, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView, QMessageBox 
     )
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
-
 from MyWidgetMethod import PackingCreateMethod, PackingModificationMethod
 
 
 # 声明全局变量
-WORKING_DIRECTORY_PATH = os.path.dirname(os.path.abspath(__file__)) # 获取当前文件所在目录的绝对路径
-# 读取 PlayerConfig.json 文件并加载为 JSON 对象
+# 获取当前文件所在目录的绝对路径
+WORKING_DIRECTORY_PATH = os.path.dirname(os.path.abspath(__file__)) 
+# 图片文件夹路径
+IMAGE_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__)) + r'\phbimage' 
+# 读取 PlayerConfig.json, PlayerStyle.json文件并加载为 JSON 对象
 with open(WORKING_DIRECTORY_PATH + r'\PlayerConfig.json', 'r', encoding='utf-8') as config_json:
     config_js = json.load(config_json)
 with open(WORKING_DIRECTORY_PATH + r'\PlayerStyle.json', 'r', encoding='utf-8') as style_json:
@@ -65,8 +62,8 @@ class ApplicationWindow(QMainWindow):
         # 一级UI设置
         self.setWindowTitle("Music Player")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
-        self.setWindowIcon(QIcon(WORKING_DIRECTORY_PATH + r"\player.png"))
-        PackingModificationMethod.set_background_image(self, WORKING_DIRECTORY_PATH + r"\Golden Buddha.png")
+        self.setWindowIcon(QIcon(IMAGE_FOLDER_PATH + r"\player.png"))
+        PackingModificationMethod.set_background_image(self, IMAGE_FOLDER_PATH + r"\Golden Buddha.png")
         PackingModificationMethod.set_desktop_center(self)
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)# 一级UI界面的层次设置, False置于最底部, True置顶
         #self.setWindowFlag(Qt.FramelessWindowHint)
@@ -236,7 +233,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='Q*& 私人专属音乐播放工具 Qwq', 
             Alignment = Qt.AlignHCenter | Qt.AlignBottom, 
             Geometry = (18, 30, 1200, 100),
-            ObjectName = "label--1_1",
+            ObjectName = style_js["label_MainWindow_main_text"],
             StyleSheet =style_css
         )
 
@@ -246,7 +243,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='正在\n播放', 
             Alignment = Qt.AlignHCenter | Qt.AlignVCenter,
             Geometry = (270, 290, 100, 100),
-            ObjectName = "label--2_1",
+            ObjectName = style_js["label_current_play_text"],
             StyleSheet =style_css
         )
 
@@ -257,7 +254,7 @@ class ApplicationWindow(QMainWindow):
             Alignment = Qt.AlignVCenter | Qt.AlignLeft,
             TextInteractionFlags = Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard, # 允许鼠标,键盘与标签文本交互
             Geometry = (410, 265, 650, 150),
-            ObjectName = "label--3_1",
+            ObjectName = style_js["label_current_play_content"],
             StyleSheet =style_css
         )
         
@@ -266,7 +263,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='上一首',
             clicked_callback = self.previous_play,
             Geometry = (400, 600, 150, 80),
-            ObjectName = "button--1",
+            ObjectName = style_js["button_previous"],
             StyleSheet = style_css
         )
 
@@ -275,7 +272,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='下一首',
             clicked_callback = self.next_play,
             Geometry = (700, 600, 150, 80),
-            ObjectName = "button--2",
+            ObjectName = style_js["button_next"],
             StyleSheet = style_css
         )
 
@@ -284,7 +281,7 @@ class ApplicationWindow(QMainWindow):
             self, text='开始',
             clicked_callback = self.music_pause,
             Geometry = (550, 600, 150, 80),
-            ObjectName = "button--3",
+            ObjectName = style_js["button_pause_or_begin"],
             StyleSheet = style_css
         )
         
@@ -294,7 +291,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='随机播放',
             clicked_callback = self.random_play,
             Geometry = (475, 520, 150, 80),
-            ObjectName = "button--4",
+            ObjectName = style_js["button_shuffle_play"],
             StyleSheet = style_css
         )                                               
 
@@ -303,7 +300,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text=('单曲循环' if config_js['need_cycle'] is False else 'cycling'),
             clicked_callback = self.single_cycle_play,
             Geometry = (625, 520, 150, 80),
-            ObjectName = "button--5",
+            ObjectName = style_js["button_single_loop"],
             StyleSheet = style_css
         )
  
@@ -313,7 +310,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='退出',
             clicked_callback = self.confirm_to_quit,
             Geometry = (0, 735, 50, 30),
-            ObjectName = "button--8",
+            ObjectName = style_js["button_quit"],
             StyleSheet = style_css
         )
 
@@ -322,7 +319,7 @@ class ApplicationWindow(QMainWindow):
             parent=self, text='请不要点击过快,UI响应需要时间!此工具仅用于学术交流!', 
             Alignment = Qt.AlignCenter,
             Geometry = (250, 680, 800, 100),
-            ObjectName = "label--4_1",
+            ObjectName = style_js["label_warning_text"],
             StyleSheet =style_css
         )
 
@@ -380,8 +377,8 @@ class SearchUI(QDialog):
         # 设置二级UI
         self.setWindowTitle("歌曲查询中...")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
-        self.setWindowIcon(QIcon(WORKING_DIRECTORY_PATH + r"\Beauty With Headset.png"))
-        PackingModificationMethod.set_background_image( self, WORKING_DIRECTORY_PATH + r"\Beauty With Headset.png")
+        self.setWindowIcon(QIcon(IMAGE_FOLDER_PATH + r"\Beauty With Headset.png"))
+        PackingModificationMethod.set_background_image( self, IMAGE_FOLDER_PATH + r"\Beauty With Headset.png")
         PackingModificationMethod.set_desktop_center(self)
         #self.setWindowFlag(Qt.FramelessWindowHint)
         # 方法绑定
@@ -395,14 +392,22 @@ class SearchUI(QDialog):
         """ 创建菜单用于呼出二级UI(SearchUI) """
 
         # 一级菜单
-        self.menu_search_for_target_song = QMenu('查询界面', self.main_window)
+        self.menu_search_for_target_song = PackingCreateMethod.my_menu(
+            parent=self.main_window,
+            title='查询界面',
+            ObjectName='menu--1',
+            StyleSheet=style_css,
+            superior=self.main_window.menubar
+        )
+        
         # 二级菜单
-        entry_action = QAction('打开查询界面', self.main_window)
-        entry_action.triggered.connect(lambda: self.exec_rewrite())
-        # 向一级菜单添加二级菜单(action)
-        self.menu_search_for_target_song.addAction(entry_action)
-        # 向菜单栏添加一级菜单
-        self.main_window.menubar.addMenu(self.menu_search_for_target_song)
+        entry_action = PackingCreateMethod.my_action(
+            parent=self.main_window,
+            text="打开查询界面",
+            triggered_callback=lambda: self.exec_rewrite(),
+            Icon_path=IMAGE_FOLDER_PATH + r"\Beauty With Headset.png",
+            superior=self.menu_search_for_target_song
+        )
 
     def exec_rewrite(self) -> None:
         """ 自定义的窗口呼出方法 """
@@ -481,7 +486,7 @@ class SearchUI(QDialog):
         self.label_SearchUI_main_text = PackingCreateMethod.my_label(
             parent=self, text='@ 歌曲查找界面 #', 
             Geometry = (400, 0, 1000, 100),
-            ObjectName = "label--5_1",
+            ObjectName = style_js["label_SearchUI_main_text"],
             StyleSheet =style_css
         )
     
@@ -491,7 +496,7 @@ class SearchUI(QDialog):
             parent=self, text='当前文件夹(库名):', 
             Alignment = Qt.AlignVCenter,
             Geometry = (150, 100, 300, 60),
-            ObjectName = "label--6_1",
+            ObjectName = style_js["label_folder_path_text"],
             StyleSheet =style_css
         )
         
@@ -500,7 +505,7 @@ class SearchUI(QDialog):
             parent=self, text=os.path.basename(config_js['music_folder_path']), 
             Alignment = Qt.AlignVCenter,
             Geometry = (450, 100, 550, 60),
-            ObjectName = "label--7_1",
+            ObjectName = style_js["label_current_folder"],
             StyleSheet =style_css
         )
 
@@ -509,7 +514,7 @@ class SearchUI(QDialog):
             parent=self, text='请输入歌曲/歌手名称:', 
             Alignment = Qt.AlignVCenter,
             Geometry = (100, 160, 350, 60),
-            ObjectName = "label--8_1",
+            ObjectName = style_js["label_input_reminder_text"],
             StyleSheet =style_css
         )
 
@@ -526,7 +531,7 @@ class SearchUI(QDialog):
             clicked_callback = lambda: self.searching(self.lineEdit_input_song_title.text()),
             setFocusPolicy = Qt.TabFocus,
             Geometry = (900, 160, 100, 60),
-            ObjectName = "button--6",
+            ObjectName = style_js["button_searching"],
             StyleSheet = style_css
         )
 
@@ -559,7 +564,7 @@ class SearchUI(QDialog):
             clicked_callback = self.search_ui_play,
             setFocusPolicy = Qt.TabFocus,
             Geometry = (570, 550, 100, 60),
-            ObjectName = "button--7",
+            ObjectName = style_js["button_play_selected_song"],
             StyleSheet = style_css
         )
 
@@ -576,7 +581,7 @@ class SearchUI(QDialog):
             '\n歌曲名(歌曲信息)--歌手1&歌手2...(歌手信息).mp3', 
             Alignment = Qt.AlignLeft,
             Geometry = (110, 650, 1200, 300),
-            ObjectName = "label--9_1",
+            ObjectName = style_js["label_use_attention_text"],
             StyleSheet =style_css
         )
  
@@ -603,29 +608,36 @@ class ChangeFolderMenu(object):
         """ 创建菜单,用于显示用户自定义的歌单 """
         
         # 一级菜单
-        self.menu_change_folder_path = QMenu('更改文件夹', self.main_window)
-        
+        self.menu_change_folder_path = PackingCreateMethod.my_menu(
+            parent=self.main_window,
+            title='更改文件夹',
+            ObjectName='menu--1',
+            StyleSheet=style_css,
+            superior=self.main_window.menubar
+        )
         # 在config_js的music_folders_path中找到所有一级菜单名
         secmenu_names = [js_secmenu[0] for js_secmenu in config_js["music_folders_path"]]        
         # 以二级菜单个数作为循环结束条件
         for i in range(0, len(config_js["music_folders_path"])):
             # 创建二级菜单 
-            secmenu = QMenu(secmenu_names[i], self.main_window) 
+            secmenu = PackingCreateMethod.my_menu(
+                parent=self.main_window,
+                title=secmenu_names[i],
+                ObjectName='menu--1',
+                StyleSheet=style_css,
+                superior=self.menu_change_folder_path
+            )            
             # 在config_js的music_folders_path中找到当先二级菜单下的所有三级菜单列表
             actions = config_js["music_folders_path"][i][1:]
             # 创建三级菜单
             for action_name, action_path in actions:
                 if isinstance(action_name, str) and isinstance(action_path, str):
-                    action = QAction(f'{action_name}',  self.main_window)
-                    # 使用functools.partial动态的传递参数
-                    action.triggered.connect(functools.partial(self.change_music_path, action_path))
-                    # 将三级菜单添加到二级菜单
-                    secmenu.addAction(action)
-            # 将二级菜单添加到一级菜单
-            self.menu_change_folder_path.addMenu(secmenu)
-
-        # 向菜单栏添加一级菜单
-        self.main_window.menubar.addMenu(self.menu_change_folder_path)
+                    action = PackingCreateMethod.my_action(
+                        parent=self.main_window,
+                        text=f'{action_name}',
+                        triggered_callback=[self.change_music_path, action_path],
+                        superior=secmenu
+                    )
         
     def change_music_path(self, path:str) -> None:
         """ 更改文件夹路径(菜单项绑定操作),用于切换歌单 """
@@ -646,30 +658,45 @@ class ChangeKeyPressProgrammeMenu(object):
     def build_menu(self) -> None:
         """ 创建菜单,用于显示键盘快捷方案"""
         #一级菜单
-        self.menu_change_key_press_programme = QMenu('快捷方式', self.main_window)
-
-        # 二级菜单
-        default_action_1 = QAction('关闭快捷方式', self.main_window)
-        default_action_1.triggered.connect(lambda: setattr(self.main_window, 'key_press_programme', None))
-        default_action_2 = QAction('主键盘+方向键', self.main_window)
-        default_action_2.triggered.connect(lambda: setattr(self.main_window, 'key_press_programme', '1'))
-        default_action_3 = QAction('Ctrl+主键盘', self.main_window)
-        default_action_3.triggered.connect(lambda: setattr(self.main_window, 'key_press_programme', '2'))
-        default_action_4 = QAction('数字键盘', self.main_window)
-        default_action_4.triggered.connect(lambda: setattr(self.main_window, 'key_press_programme', '3'))
-        default_action_5 = QAction('Ctrl+数字键盘', self.main_window)
-        default_action_5.triggered.connect(lambda: setattr(self.main_window, 'key_press_programme', '4'))
+        self.menu_change_key_press_programme = PackingCreateMethod.my_menu(
+                parent=self.main_window,
+                title='快捷方式',
+                ObjectName='menu--1',
+                StyleSheet=style_css,
+                superior=self.main_window.menubar
+        )
         
-        # 向一级菜单添加二级菜单(action)
-        self.menu_change_key_press_programme.addAction(default_action_1)
-        self.menu_change_key_press_programme.addAction(default_action_2)
-        self.menu_change_key_press_programme.addAction(default_action_3)
-        self.menu_change_key_press_programme.addAction(default_action_4)
-        self.menu_change_key_press_programme.addAction(default_action_5)
-
-        #向菜单栏添加一级菜单
-        self.main_window.menubar.addMenu(self.menu_change_key_press_programme)
-
+        # 二级菜单
+        default_action_1 = PackingCreateMethod.my_action(
+                        parent=self.main_window,
+                        text='关闭快捷方式',
+                        triggered_callback=lambda: setattr(self.main_window, 'key_press_programme', None),
+                        superior=self.menu_change_key_press_programme
+        )
+        default_action_2 = PackingCreateMethod.my_action(
+                        parent=self.main_window,
+                        text='主键盘+方向键',
+                        triggered_callback=lambda: setattr(self.main_window, 'key_press_programme', '1'),
+                        superior=self.menu_change_key_press_programme
+        )
+        default_action_3 = PackingCreateMethod.my_action(
+                        parent=self.main_window,
+                        text='Ctrl+主键盘',
+                        triggered_callback=lambda: setattr(self.main_window, 'key_press_programme', '2'),
+                        superior=self.menu_change_key_press_programme
+        )
+        default_action_4 = PackingCreateMethod.my_action(
+                        parent=self.main_window,
+                        text='数字键盘',
+                        triggered_callback=lambda: setattr(self.main_window, 'key_press_programme', '3'),
+                        superior=self.menu_change_key_press_programme
+        )
+        default_action_5 = PackingCreateMethod.my_action(
+                        parent=self.main_window,
+                        text='Ctrl+数字键盘',
+                        triggered_callback=lambda: setattr(self.main_window, 'key_press_programme', '4'),
+                        superior=self.menu_change_key_press_programme
+        )
         #绑定操作(可以被setattr()替换)
     #def change_key_press_programme(self, programme_number):
         #self.main_window.key_press_programme = programme_number
@@ -687,20 +714,25 @@ class SettingMenu(object):
     
     def build_menu(self) -> None:
         # 创建一级菜单
-        self.menu_setting = QMenu("⚙️", self.main_window)
-        
+        self.menu_setting = PackingCreateMethod.my_menu(
+                parent=self.main_window,
+                title='⚙️',
+                ObjectName='menu--1',
+                StyleSheet=style_css,
+                superior=self.main_window.menubar
+        )    
+        # 创建二级菜单操作
         configuration_files_menu = self.ConfigurationFilesMenu(self)
 
 ###############################################################################
         # 创建二级菜单(样式选择)
-        secmenu_style_selection = QMenu(" ❖样式", self.main_window)
-
-        # 将二级菜单(样式选择)添加到一级菜单
-        self.menu_setting.addMenu(secmenu_style_selection)
-
-
-        # 将一级菜单添加到菜单栏
-        self.main_window.menubar.addMenu(self.menu_setting)
+        secmenu_style_selection = PackingCreateMethod.my_menu(
+                parent=self.main_window,
+                title=' ❖样式',
+                ObjectName='menu--1',
+                StyleSheet=style_css,
+                superior=self.menu_setting
+        )
 
 
     class ConfigurationFilesMenu(object):
@@ -721,17 +753,35 @@ class SettingMenu(object):
 
         def build_menu(self) -> None:
             # 创建二级菜单
-            self.secmenu_setting_files = QMenu("📖配置文件", self.setting_menu.main_window)
+            self.secmenu_setting_files = PackingCreateMethod.my_menu(
+                parent=self.setting_menu.main_window,
+                title=' 📖配置文件',
+                ObjectName='menu--1',
+                StyleSheet=style_css,
+                superior=self.setting_menu.menu_setting
+            )
             # 创建三级菜单
-            action_json = QAction("📄json", self.setting_menu.main_window)
-            action_json.triggered.connect(lambda: self.open_selected_file(WORKING_DIRECTORY_PATH + r'\PlayerConfig.json'))
-            action_css = QAction("📄css", self.setting_menu.main_window)
-            action_css.triggered.connect(lambda: self.open_selected_file(WORKING_DIRECTORY_PATH + r'\PlayerStyle.css'))
-            # 将三级菜单添加到二级菜单
-            self.secmenu_setting_files.addAction(action_json)
-            self.secmenu_setting_files.addAction(action_css)
-            # 将二级菜单添加到一级菜单
-            self.setting_menu.menu_setting.addMenu(self.secmenu_setting_files)
+            action_json1 = PackingCreateMethod.my_action(
+                parent=self.setting_menu.main_window,
+                text="PlayerConfig.js",
+                triggered_callback=lambda: self.open_selected_file(WORKING_DIRECTORY_PATH + r'\PlayerConfig.json'),
+                Icon_path=IMAGE_FOLDER_PATH + r"\Json File Image.png",
+                superior=self.secmenu_setting_files
+            )
+            action_json2 = PackingCreateMethod.my_action(
+                parent=self.setting_menu.main_window,
+                text="PlayerStyle.js",
+                triggered_callback=lambda: self.open_selected_file(WORKING_DIRECTORY_PATH + r'\PlayerStyle.json'),
+                Icon_path=IMAGE_FOLDER_PATH + r"\Json File Image.png",
+                superior=self.secmenu_setting_files
+            )
+            action_css = PackingCreateMethod.my_action(
+                parent=self.setting_menu.main_window,
+                text="PlayerStyle.css",
+                triggered_callback=lambda: self.open_selected_file(WORKING_DIRECTORY_PATH + r'\PlayerStyle.css'),
+                Icon_path=IMAGE_FOLDER_PATH + r"\Css File Image.png",
+                superior=self.secmenu_setting_files
+            )
 
         def open_selected_file(self, file_path) -> None:
             """ 菜单项的绑定操作,用于打开选中的文件"""
@@ -780,7 +830,7 @@ class KeyboardListener(object):
         self.thread_listen.name = 'KeyboardListener'
         self.thread_listen.start()
 
-    def concentrate_key_press_programme(self, key, programme=None) -> [None,str]:
+    def concentrate_key_press_programme(self, key, programme=None) -> None | str:
         """ 
         管理快捷方案 
         
