@@ -1,7 +1,9 @@
 import typing
-from PyQt5.QtWidgets import QPushButton, QLabel, QDesktopWidget
+import functools
+from PyQt5.QtWidgets import QPushButton, QLabel, QDesktopWidget, QMenu, QAction
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QPalette, QBrush
+from PyQt5.QtGui import QPixmap, QPalette, QBrush, QIcon
+
 
 class PackingCreateMethod(object):
     """ 组件创建时的方法 """
@@ -17,7 +19,7 @@ class PackingCreateMethod(object):
         Geometry: typing.Tuple[int, int, int, int] = (0, 0, 100, 50), 
         ObjectName: str = '',
         StyleSheet: str = ''
-        ):
+    ):
         """ 
         label方法打包 
         
@@ -52,7 +54,7 @@ class PackingCreateMethod(object):
         Geometry: typing.Tuple[int, int, int, int] = (0, 0, 100, 50), 
         ObjectName: str = 'QPushButton',
         StyleSheet: str = '',
-        ):
+    ):
         """ 
         push button方法打包 
         
@@ -74,6 +76,65 @@ class PackingCreateMethod(object):
         push_button.setStyleSheet(StyleSheet)
         return push_button
     
+    @staticmethod
+    def my_menu(
+        parent = ..., 
+        title: str = '', 
+        ObjectName: str = '',
+        StyleSheet: str = '',
+        superior = None
+    ):
+        """ 
+        Menu方法打包 
+        
+        Args:
+            parent: 父对象
+            title: 菜单文本内容
+            ObjectName: 对象名称
+            StyleSheet: 样式表
+            superior: 上级菜单/菜单栏
+        """ 
+        menu = QMenu(title=title, parent=parent)
+        menu.setObjectName(ObjectName)
+        menu.setStyleSheet(StyleSheet)
+        if superior is not None:
+            superior.addMenu(menu)
+        return menu
+    
+    @typing.overload
+    def my_action(triggered_callback: any = "method") -> QAction:...
+    @typing.overload
+    def my_action(triggered_callback: any = ["method", "arg"]) -> QAction:...
+    @staticmethod
+    def my_action(
+        parent = ..., 
+        text: str = '', 
+        triggered_callback: typing.Callable | list = ...,
+        Icon_path: str = '',
+        superior = None
+    ):
+        """
+        action 方法打包
+
+        Args:
+            parent: 父对象
+            text: 文本内容 
+            triggered_callback: 触发函数
+            Icon_path: 图标路径
+            superior: 上级菜单/菜单栏
+        """
+        action = QAction(text=text, parent=parent)
+        if isinstance(triggered_callback, list):
+            action.triggered.connect(functools.partial(triggered_callback[0], triggered_callback[1]))
+        elif not isinstance(triggered_callback, list):
+            action.triggered.connect(triggered_callback)
+        else:
+            print("参数不正确!")
+        action.setIcon(QIcon(Icon_path))
+        if superior is not None:
+            superior.addAction(action)
+        return action
+
 
 class PackingModificationMethod(object):
     """ 组件属性的修改方法 """
