@@ -1,0 +1,21 @@
+{
+    "label_MainWindow_main_text": "",
+    "label_current_play_text": "",
+    "label_current_play_content": "",
+    "label_warning_text": "",
+    "button_previous": "",
+    "button_next": "",
+    "button_pause_or_begin": "",
+    "button_shuffle_play": "",
+    "button_single_loop": "",
+    "button_quit": "",
+    "label_SearchUI_main_text": "",
+    "label_folder_path_text": "",
+    "label_current_folder": "",
+    "label_input_reminder_text": "",
+    "lineEdit_input_song_title": "",
+    "button_searching": "",
+    "treeview_search_result": "",
+    "button_play_selected_song": "",
+    "label_use_attention_text": ""
+}

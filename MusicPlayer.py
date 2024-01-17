@@ -1,9 +1,9 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-01-17 19:23:29
+LastEditTime: 2024-01-17 22:40:11
 version: 2.7.11
-FilePath: \pythond:\Users\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\MusicPlayer.py
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\MusicPlayer.py
 Description: 
 此代码实现的是一个基于Python与本地储存的mp3文件的本地播放器.
 				/*		写字楼里写字间，写字间里程序员；
@@ -14,7 +14,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				\*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) ${2023} by ${HDJ}, All Rights Reserved. 
+Copyright (c) ${2024} by ${HDJ}, All Rights Reserved. 
 '''
 import time
 import glob
@@ -33,6 +33,7 @@ from PyQt5.QtWidgets import (
     )
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer
+
 from MyWidgetMethod import PackingCreateMethod, PackingModificationMethod
 
 
