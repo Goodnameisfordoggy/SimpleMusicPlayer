@@ -7,6 +7,20 @@
 ![GUI2](phbimage/GUI2.3.png)
 
 # Update log:
+## 2024/1 ↓
+
+#### 2.8.11
+将整个项目拆分为多个文件管理
+|拆分后的文件名|
+|---|
+MusicPlayer.py
+ApplicationWindow.py
+DataProtector.py
+IsOverMonitor.py
+KeyboardListener.py
+SearchUI.py
+SettingMenu.py
+SongListMenu.py
 
 ## 2023/12 ↓
 
