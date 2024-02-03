@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-01-18 20:36:28
+LastEditTime: 2024-02-03 17:19:02
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\KeyboardListener.py
 Description: 
 
@@ -17,7 +17,7 @@ Copyright (c) ${2024} by ${HDJ}, All Rights Reserved.
 '''
 import pynput.keyboard
 import keyboard
-from MyWidgetMethod import PackingCreateMethod
+from Simple_Qt import Menu, Action
 from DataProtector import style_css
 
 
@@ -35,7 +35,7 @@ class ChangeKeyPressProgrammeMenu(object):
     def build_menu(self) -> None:
         """ 创建菜单,用于显示键盘快捷方案"""
         # 一级菜单
-        self.menu_change_key_press_programme = PackingCreateMethod.my_menu(
+        self.menu_change_key_press_programme = Menu.create(
             parent=self.main_window,
             title='快捷方式',
             ObjectName='menu--1',
@@ -44,35 +44,35 @@ class ChangeKeyPressProgrammeMenu(object):
         )
 
         # 二级菜单
-        default_action_1 = PackingCreateMethod.my_action(
+        default_action_1 = Action.create(
             parent=self.main_window,
             text='关闭快捷方式',
             triggered_callback=lambda: setattr(
                 self.main_window, 'key_press_programme', None),
             superior=self.menu_change_key_press_programme
         )
-        default_action_2 = PackingCreateMethod.my_action(
+        default_action_2 = Action.create(
             parent=self.main_window,
             text='主键盘+方向键',
             triggered_callback=lambda: setattr(
                 self.main_window, 'key_press_programme', '1'),
             superior=self.menu_change_key_press_programme
         )
-        default_action_3 = PackingCreateMethod.my_action(
+        default_action_3 = Action.create(
             parent=self.main_window,
             text='Ctrl+主键盘',
             triggered_callback=lambda: setattr(
                 self.main_window, 'key_press_programme', '2'),
             superior=self.menu_change_key_press_programme
         )
-        default_action_4 = PackingCreateMethod.my_action(
+        default_action_4 = Action.create(
             parent=self.main_window,
             text='数字键盘',
             triggered_callback=lambda: setattr(
                 self.main_window, 'key_press_programme', '3'),
             superior=self.menu_change_key_press_programme
         )
-        default_action_5 = PackingCreateMethod.my_action(
+        default_action_5 = Action.create(
             parent=self.main_window,
             text='Ctrl+数字键盘',
             triggered_callback=lambda: setattr(

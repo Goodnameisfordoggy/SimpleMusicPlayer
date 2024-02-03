@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-01-18 20:34:53
+LastEditTime: 2024-02-03 18:10:05
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -22,12 +22,12 @@ import pyglet
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from MyWidgetMethod import PackingCreateMethod, PackingModificationMethod
+from Simple_Qt import Label, PushButton, PackingModificationMethod
 from SearchUI import SearchUI
 from IsOverMonitor import IsOverMonitor
 from KeyboardListener import KeyboardListener
 from DataProtector import DataProtector
-from SettingMenu import SettingMenu
+from SettingUI import SettingUI
 from SongListMenu import ChangeFolderMenu
 from KeyboardListener import ChangeKeyPressProgrammeMenu
 from DataProtector import IMAGE_FOLDER_PATH, config_js, style_js, style_css
@@ -45,9 +45,8 @@ class ApplicationWindow(QMainWindow):
         # 一级UI设置
         self.setWindowTitle("Music Player")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
-        self.setWindowIcon(QIcon(IMAGE_FOLDER_PATH + r"\player.png"))
-        PackingModificationMethod.set_background_image(
-            self, IMAGE_FOLDER_PATH + r"\Golden Buddha.png")
+        self.setWindowIcon(QIcon(config_js['ApplicationWindowIcon']))
+        PackingModificationMethod.set_background_image(self, config_js['ApplicationWindowBackGround'])
         PackingModificationMethod.set_desktop_center(self)
         # 一级UI界面的层次设置, False置于最底部, True置顶
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
@@ -220,7 +219,7 @@ class ApplicationWindow(QMainWindow):
         """ 一级UI搭建(使用绝对布局,写死UI界面) """
 
         # 创建主体文字标签
-        self.label_MainWindow_main_text = PackingCreateMethod.my_label(
+        self.label_MainWindow_main_text = Label.create(
             parent=self, text='Q*& 私人专属音乐播放工具 Qwq',
             Alignment=Qt.AlignHCenter | Qt.AlignBottom,
             Geometry=(18, 30, 1200, 100),
@@ -230,7 +229,7 @@ class ApplicationWindow(QMainWindow):
 
         # F1 创建当前正在播放内容的显示器
         # "正在播放"标签
-        self.label_current_play_text = PackingCreateMethod.my_label(
+        self.label_current_play_text = Label.create(
             parent=self, text='正在\n播放',
             Alignment=Qt.AlignHCenter | Qt.AlignVCenter,
             Geometry=(270, 290, 100, 100),
@@ -239,7 +238,7 @@ class ApplicationWindow(QMainWindow):
         )
 
         # 显示当先正在播放歌曲名称的标签
-        self.label_current_play_content = PackingCreateMethod.my_label(
+        self.label_current_play_content = Label.create(
             parent=self, text=config_js['current_music_name'],
             WordWrap=True,  # 允许自动换行 QwQ:这个很重要
             Alignment=Qt.AlignVCenter | Qt.AlignLeft,
@@ -250,7 +249,7 @@ class ApplicationWindow(QMainWindow):
         )
 
         # 上一首按钮
-        self.button_previous = PackingCreateMethod.my_button(
+        self.button_previous = PushButton.create(
             parent=self, text='上一首',
             clicked_callback=self.previous_play,
             Geometry=(400, 600, 150, 80),
@@ -259,7 +258,7 @@ class ApplicationWindow(QMainWindow):
         )
 
         # 下一首按钮
-        self.button_next = PackingCreateMethod.my_button(
+        self.button_next = PushButton.create(
             parent=self, text='下一首',
             clicked_callback=self.next_play,
             Geometry=(700, 600, 150, 80),
@@ -268,7 +267,7 @@ class ApplicationWindow(QMainWindow):
         )
 
         # 开始/暂停按钮
-        self.button_pause_or_begin = PackingCreateMethod.my_button(
+        self.button_pause_or_begin = PushButton.create(
             self, text='开始',
             clicked_callback=self.music_pause,
             Geometry=(550, 600, 150, 80),
@@ -278,7 +277,7 @@ class ApplicationWindow(QMainWindow):
 
         # F3
         # 随机播放按钮
-        self.button_shuffle_play = PackingCreateMethod.my_button(
+        self.button_shuffle_play = PushButton.create(
             parent=self, text='随机播放',
             clicked_callback=self.random_play,
             Geometry=(475, 520, 150, 80),
@@ -287,7 +286,7 @@ class ApplicationWindow(QMainWindow):
         )
 
         # 单曲循环按钮
-        self.button_single_loop = PackingCreateMethod.my_button(
+        self.button_single_loop = PushButton.create(
             parent=self, text=(
                 '单曲循环' if config_js['need_cycle'] is False else 'cycling'),
             clicked_callback=self.single_cycle_play,
@@ -298,7 +297,7 @@ class ApplicationWindow(QMainWindow):
 
         # F4
         # 退出按钮
-        self.button_quit = PackingCreateMethod.my_button(
+        self.button_quit = PushButton.create(
             parent=self, text='退出',
             clicked_callback=self.confirm_to_quit,
             Geometry=(0, 735, 50, 30),
@@ -307,7 +306,7 @@ class ApplicationWindow(QMainWindow):
         )
 
         # 警告标签
-        self.label_warning_text = PackingCreateMethod.my_label(
+        self.label_warning_text = Label.create(
             parent=self, text='请不要点击过快,UI响应需要时间!此工具仅用于学术交流!',
             Alignment=Qt.AlignCenter,
             Geometry=(250, 680, 800, 100),
@@ -323,7 +322,7 @@ class ApplicationWindow(QMainWindow):
         self.menubar.setStyleSheet(style_css)
 
         # 一级菜单创建操作
-        menu_setting = SettingMenu(self)
+        menu_setting = SettingUI(app=self)
 
         menu_chang_folder_path = ChangeFolderMenu(self)
 

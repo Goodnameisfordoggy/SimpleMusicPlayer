@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-01-18 20:13:49
+LastEditTime: 2024-02-03 22:39:03
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SearchUI.py
 Description: 
 
@@ -17,17 +17,18 @@ Copyright (c) ${2024} by ${HDJ}, All Rights Reserved.
 '''
 import os
 import re
-from PyQt5.QtWidgets import QMessageBox, QDialog, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView
+import sys
+from PyQt5.QtWidgets import QApplication, QMessageBox, QDialog, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from MyWidgetMethod import PackingCreateMethod, PackingModificationMethod
+from Simple_Qt import Label, PushButton, Menu, Action, PackingModificationMethod
 from DataProtector import IMAGE_FOLDER_PATH, style_css, style_js, config_js
 
 
 class SearchUI(QDialog):
     """ 歌曲搜索界面 """
 
-    def __init__(self, main_window, width=1250, height=950) -> None:
+    def __init__(self, main_window = None, width=1250, height=950) -> None:
         super().__init__()
         # 一级UI对象传入
         self.main_window = main_window
@@ -35,10 +36,8 @@ class SearchUI(QDialog):
         # 设置二级UI
         self.setWindowTitle("歌曲查询中...")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
-        self.setWindowIcon(
-            QIcon(IMAGE_FOLDER_PATH + r"\Beauty With Headset.png"))
-        PackingModificationMethod.set_background_image(
-            self, IMAGE_FOLDER_PATH + r"\Beauty With Headset.png")
+        self.setWindowIcon(QIcon(config_js['SearchUIIcon']))
+        PackingModificationMethod.set_background_image(self, config_js['SearchUIBackGround'])
         PackingModificationMethod.set_desktop_center(self)
         # self.setWindowFlag(Qt.FramelessWindowHint)
         # 方法绑定
@@ -52,7 +51,7 @@ class SearchUI(QDialog):
         """ 创建菜单用于呼出二级UI(SearchUI) """
 
         # 一级菜单
-        self.menu_search_for_target_song = PackingCreateMethod.my_menu(
+        self.menu_search_for_target_song = Menu.create(
             parent=self.main_window,
             title='查询界面',
             ObjectName='menu--1',
@@ -61,7 +60,7 @@ class SearchUI(QDialog):
         )
 
         # 二级菜单
-        entry_action = PackingCreateMethod.my_action(
+        entry_action = Action.create(
             parent=self.main_window,
             text="打开查询界面",
             triggered_callback=lambda: self.exec_rewrite(),
@@ -71,8 +70,7 @@ class SearchUI(QDialog):
 
     def exec_rewrite(self) -> None:
         """ 自定义的窗口呼出方法 """
-        self.label_current_folder.setText(
-            os.path.basename(config_js['music_folder_path']))
+        self.label_current_folder.setText(os.path.basename(config_js['music_folder_path']))
         self.show()
         self.main_window.showMinimized()
 
@@ -95,8 +93,7 @@ class SearchUI(QDialog):
                     # 将搜索内容显示到图表中
                     self.add_tree_item(
                         f'{key}',
-                        os.path.basename(self.main_window.play_dict[key]).replace(
-                            ".mp3", '').split("--")[0],
+                        os.path.basename(self.main_window.play_dict[key]).replace(".mp3", '').split("--")[0],
                         f'{singer_name}'
                     )
             if num <= 0:
@@ -148,7 +145,7 @@ class SearchUI(QDialog):
         """ 二级UI(SearchUI)搭建,使用绝对布局 """
 
         # 主体标签设置
-        self.label_SearchUI_main_text = PackingCreateMethod.my_label(
+        self.label_SearchUI_main_text = Label.create(
             parent=self, text='@ 歌曲查找界面 #',
             Geometry=(400, 0, 1000, 100),
             ObjectName=style_js["label_SearchUI_main_text"],
@@ -157,7 +154,7 @@ class SearchUI(QDialog):
 
         # F1
         # "当前文件夹(库名):"标签
-        self.label_folder_path_text = PackingCreateMethod.my_label(
+        self.label_folder_path_text = Label.create(
             parent=self, text='当前文件夹(库名):',
             Alignment=Qt.AlignVCenter,
             Geometry=(150, 100, 300, 60),
@@ -166,7 +163,7 @@ class SearchUI(QDialog):
         )
 
         # 显示当前文件夹路径的标签
-        self.label_current_folder = PackingCreateMethod.my_label(
+        self.label_current_folder = Label.create(
             parent=self, text=os.path.basename(config_js['music_folder_path']),
             Alignment=Qt.AlignVCenter,
             Geometry=(450, 100, 550, 60),
@@ -175,7 +172,7 @@ class SearchUI(QDialog):
         )
 
         # 输入提示文本
-        self.label_input_reminder_text = PackingCreateMethod.my_label(
+        self.label_input_reminder_text = Label.create(
             parent=self, text='请输入歌曲/歌手名称:',
             Alignment=Qt.AlignVCenter,
             Geometry=(100, 160, 350, 60),
@@ -191,7 +188,7 @@ class SearchUI(QDialog):
         self.lineEdit_input_song_title.setStyleSheet(style_css)
 
         # 搜索按钮
-        self.button_searching = PackingCreateMethod.my_button(
+        self.button_searching = PushButton.create(
             parent=self, text='搜索',
             clicked_callback=lambda: self.searching(
                 self.lineEdit_input_song_title.text()),
@@ -224,7 +221,7 @@ class SearchUI(QDialog):
         self.treeview_search_result.itemClicked.connect(self.onclick)
 
         # 播放所选歌曲按钮
-        self.button_play_selected_song = PackingCreateMethod.my_button(
+        self.button_play_selected_song = PushButton.create(
             parent=self, text='播放',
             clicked_callback=self.search_ui_play,
             setFocusPolicy=Qt.TabFocus,
@@ -234,7 +231,7 @@ class SearchUI(QDialog):
         )
 
         # F3 注意事项文本标签
-        self.label_use_attention_text = PackingCreateMethod.my_label(
+        self.label_use_attention_text = Label.create(
             parent=self,
             text='注意事项:'
             '\n1.该功能仅限于在所添加的文件夹中搜索歌曲(序号按文件夹内顺序),而非爬虫!'
@@ -257,3 +254,5 @@ class SearchUI(QDialog):
         self.main_window.showNormal()
         # 调用父类的 closeEvent 方法，确保原有的行为能够正常执行
         super().closeEvent(event)
+
+

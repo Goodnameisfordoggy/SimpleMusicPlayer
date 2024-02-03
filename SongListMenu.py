@@ -15,7 +15,7 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) ${2024} by ${HDJ}, All Rights Reserved. 
 '''
-from MyWidgetMethod import PackingCreateMethod
+from Simple_Qt import Menu, Action
 from DataProtector import style_css, config_js
 
 
@@ -34,7 +34,7 @@ class ChangeFolderMenu(object):
         """ 创建菜单,用于显示用户自定义的歌单 """
 
         # 一级菜单
-        self.menu_change_folder_path = PackingCreateMethod.my_menu(
+        self.menu_change_folder_path = Menu.create(
             parent=self.main_window,
             title='更改文件夹',
             ObjectName='menu--1',
@@ -42,12 +42,11 @@ class ChangeFolderMenu(object):
             superior=self.main_window.menubar
         )
         # 在config_js的music_folders_path中找到所有一级菜单名
-        secmenu_names = [js_secmenu[0]
-                         for js_secmenu in config_js["music_folders_path"]]
+        secmenu_names = [js_secmenu[0] for js_secmenu in config_js["music_folders_path"]]
         # 以二级菜单个数作为循环结束条件
         for i in range(0, len(config_js["music_folders_path"])):
             # 创建二级菜单
-            secmenu = PackingCreateMethod.my_menu(
+            secmenu = Menu.create(
                 parent=self.main_window,
                 title=secmenu_names[i],
                 ObjectName='menu--1',
@@ -59,11 +58,10 @@ class ChangeFolderMenu(object):
             # 创建三级菜单
             for action_name, action_path in actions:
                 if isinstance(action_name, str) and isinstance(action_path, str):
-                    action = PackingCreateMethod.my_action(
+                    action = Action.create(
                         parent=self.main_window,
                         text=f'{action_name}',
-                        triggered_callback=[
-                            self.change_music_path, action_path],
+                        triggered_callback=[self.change_music_path, action_path],
                         superior=secmenu
                     )
 

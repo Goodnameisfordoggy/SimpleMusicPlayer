@@ -10,6 +10,12 @@
             ]
         ]
     ],
+    "#1.2": "背景,图标设置",
+    "ApplicationWindowBackGround": "phbimage\\Golden Buddha.png",
+    "ApplicationWindowIcon": "phbimage\\player.png",
+    "SearchUIBackGround": "phbimage\\Beauty With Headset.png",
+    "SearchUIIcon": "phbimage\\Beauty With Headset.png",
+
     "#2": "以下参数严禁更改!",
     "music_folder_path": "",
     "current_music_number": "*0*",
