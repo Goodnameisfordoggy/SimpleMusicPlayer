@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-03 18:10:05
+LastEditTime: 2024-02-04 23:44:27
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -30,7 +30,7 @@ from DataProtector import DataProtector
 from SettingUI import SettingUI
 from SongListMenu import ChangeFolderMenu
 from KeyboardListener import ChangeKeyPressProgrammeMenu
-from DataProtector import IMAGE_FOLDER_PATH, config_js, style_js, style_css
+from DataProtector import config_js, style_js, style_css
 
 
 class ApplicationWindow(QMainWindow):

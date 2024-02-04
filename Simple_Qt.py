@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-03 16:54:56
+LastEditTime: 2024-02-04 18:11:57
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\Simple_Qt.py
 Description: 对常用组件的属性,方法的简单集成
 
@@ -19,7 +19,7 @@ import typing
 import functools
 from PyQt5.QtWidgets import (
     QWidget, QPushButton, QLabel, QDesktopWidget, QMenuBar, QMenu, QAction, QLayout, QFormLayout, 
-    QGridLayout, QBoxLayout, QHBoxLayout, QVBoxLayout)
+    QGridLayout, QBoxLayout, QHBoxLayout, QVBoxLayout, QSpacerItem)
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QPalette, QBrush, QIcon
 
@@ -140,7 +140,7 @@ class Menu():
         menu = QMenu(title=title, parent=parent)
         menu.setObjectName(ObjectName)
         menu.setStyleSheet(StyleSheet)
-        if superior is not None:
+        if superior:
             superior.addMenu(menu)
         return menu
     
@@ -155,7 +155,7 @@ class Action():
     def create(
         parent: QWidget | None = ..., 
         text: str = '', 
-        triggered_callback: typing.Callable | list[typing.Callable, any] = ...,
+        triggered_callback: typing.Callable | list[typing.Callable | any] = ...,
         Icon_path: str = '',
         superior: QMenu = None
     ):
@@ -178,7 +178,7 @@ class Action():
         else:
             raise TypeError("参数类型未设置!")
         action.setIcon(QIcon(Icon_path))
-        if superior is not None:
+        if superior:
             superior.addAction(action)
         return action
     
@@ -189,12 +189,12 @@ class Layout():
     def create(
         name: str = '',
         parent: QWidget | None = None,
-        children: list[QWidget, QLayout] = []
+        children: list[QWidget | QLayout | QSpacerItem] = [],
         ):
         """
         name: 布局名称:选择一个(QFormLayout,QGridLayout, QBoxLayout, QHBoxLayout, QVBoxLayout)
         parent: 父组件, 将此布局设置为其主布局  QWQ:一个组件只能有一个主布局, 不要将同一个组件传给多个SP_Layout.create()
-        children: 子组件/布局
+        children: 子组件/子布局/子项等
         
         布局用法:\n
         widget -> 添加父布局 parent_layout.addWidget(widget)\n
@@ -218,6 +218,8 @@ class Layout():
                     layout.addWidget(child)
                 elif isinstance(child, QLayout):
                     layout.addLayout(child)
+                elif isinstance(child, QSpacerItem):
+                    layout.addSpacerItem(child)
                 else:
                     raise TypeError("组件类型错误!")
         return layout
