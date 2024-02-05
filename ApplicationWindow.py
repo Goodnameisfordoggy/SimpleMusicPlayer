@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-04 23:44:27
+LastEditTime: 2024-02-05 23:30:42
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -29,7 +29,6 @@ from KeyboardListener import KeyboardListener
 from DataProtector import DataProtector
 from SettingUI import SettingUI
 from SongListMenu import ChangeFolderMenu
-from KeyboardListener import ChangeKeyPressProgrammeMenu
 from DataProtector import config_js, style_js, style_css
 
 
@@ -327,8 +326,6 @@ class ApplicationWindow(QMainWindow):
         menu_chang_folder_path = ChangeFolderMenu(self)
 
         menu_search_for_target_song = SearchUI(self)
-
-        menu_change_key_press_programme = ChangeKeyPressProgrammeMenu(self)
 
     # 窗口跟随鼠标移动(单击拖动窗口)
     def mousePressEvent(self, event) -> None:

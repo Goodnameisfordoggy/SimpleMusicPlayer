@@ -18,70 +18,7 @@ Copyright (c) ${2024} by ${HDJ}, All Rights Reserved.
 import pynput.keyboard
 import keyboard
 from Simple_Qt import Menu, Action
-from DataProtector import style_css
-
-
-class ChangeKeyPressProgrammeMenu(object):
-    """ 一级菜单--更改键盘快捷方案"""
-
-    def __init__(self, main_window) -> None:
-        # 一级UI对象传入
-        self.main_window = main_window
-        # 底层变量
-        self.menu_change_key_press_programme = None
-        # 方法绑定
-        self.build_menu()
-
-    def build_menu(self) -> None:
-        """ 创建菜单,用于显示键盘快捷方案"""
-        # 一级菜单
-        self.menu_change_key_press_programme = Menu.create(
-            parent=self.main_window,
-            title='快捷方式',
-            ObjectName='menu--1',
-            StyleSheet=style_css,
-            superior=self.main_window.menubar
-        )
-
-        # 二级菜单
-        default_action_1 = Action.create(
-            parent=self.main_window,
-            text='关闭快捷方式',
-            triggered_callback=lambda: setattr(
-                self.main_window, 'key_press_programme', None),
-            superior=self.menu_change_key_press_programme
-        )
-        default_action_2 = Action.create(
-            parent=self.main_window,
-            text='主键盘+方向键',
-            triggered_callback=lambda: setattr(
-                self.main_window, 'key_press_programme', '1'),
-            superior=self.menu_change_key_press_programme
-        )
-        default_action_3 = Action.create(
-            parent=self.main_window,
-            text='Ctrl+主键盘',
-            triggered_callback=lambda: setattr(
-                self.main_window, 'key_press_programme', '2'),
-            superior=self.menu_change_key_press_programme
-        )
-        default_action_4 = Action.create(
-            parent=self.main_window,
-            text='数字键盘',
-            triggered_callback=lambda: setattr(
-                self.main_window, 'key_press_programme', '3'),
-            superior=self.menu_change_key_press_programme
-        )
-        default_action_5 = Action.create(
-            parent=self.main_window,
-            text='Ctrl+数字键盘',
-            triggered_callback=lambda: setattr(
-                self.main_window, 'key_press_programme', '4'),
-            superior=self.menu_change_key_press_programme
-        )
-        # 绑定操作(可以被setattr()替换)
-    # def change_key_press_programme(self, programme_number):
-        # self.main_window.key_press_programme = programme_number
+from DataProtector import style_css, config_js
 
 
 class KeyboardListener(object):
@@ -113,7 +50,7 @@ class KeyboardListener(object):
             "4": self.key_press_p4,
         }
         # programme绑定main_window属性,方便类外操作
-        programme = self.main_window.key_press_programme
+        programme = config_js['key_press_programme']
         # 关闭键盘快捷方式
         if programme is None:
             return None

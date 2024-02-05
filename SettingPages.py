@@ -2,21 +2,21 @@ import os
 import sys
 import time
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QSpacerItem, QSizePolicy, QFrame
+from PyQt5.QtWidgets import QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox
 from PyQt5.QtGui import QPixmap
 from Simple_Qt import Label, PushButton, Layout
 from DataProtector import config_js
 
 
 class PageImageSetting(QScrollArea):
-
+    """ 背景图片/图标设置页面 """
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setStyleSheet("QScrollArea { border: transparent; }")
         self.setWidgetResizable(True) # 组件可调整大小属性
         self.construct()
     
-    def construct(self):
+    def construct(self) -> None:
         """ 页面UI搭建 """
         # 主布局
         # 中心组件
@@ -122,7 +122,7 @@ class PageImageSetting(QScrollArea):
         # 将中心组件设置为滚动内容
         self.setWidget(central_widget)
     
-    def select_a_file(self, config_js_key):
+    def select_a_file(self, config_js_key) -> None:
          # 创建文件对话框
         file_dialog = QFileDialog()
         # 设置文件对话框的模式为选择文件
@@ -149,20 +149,88 @@ class PageImageSetting(QScrollArea):
 
 class PageSongList(QScrollArea):
 
-    def construct(self):
+    def construct(self) -> None:
         """ 页面UI搭建 """
         pass
 
 
 class PageShortcutSetting(QScrollArea):
+    """快捷键设置页面"""
+    def __init__(self, parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setStyleSheet("QScrollArea { border: transparent; }")
+        self.setWidgetResizable(True) # 组件可调整大小属性
+        
+        self.items = ["不使用", "主键盘+方向键", "Ctrl+主键盘", "数字键盘", "Ctrl+数字键盘"]
 
-    def construct(self):
+        self.construct()
+        
+    def construct(self) -> None:
         """ 页面UI搭建 """
-        pass
+        # 主布局
+        # 中心组件
+        central_widget = QGroupBox(None, self)
+        central_widget.setStyleSheet("QGroupBox { border: transparent; background-color: #f0f0f0; }")
+        central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
+
+        main_layout = Layout.create(name='QVBoxLayout', parent=self, children=[central_widget])
+        # 中心组件布局
+        label1 = Label.create(
+            parent=central_widget, text="内置方案", StyleSheet="font-size: 40px; font-weight: bold;")
+        
+        self.widget1 = QWidget(central_widget)
+        self.widget1.setObjectName("QWidget_1")
+        self.widget1.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
+
+        label2 = Label.create(
+            parent=central_widget, text="自定义方案", StyleSheet="font-size: 40px; font-weight: bold;")
+        
+        widget2 = QWidget(central_widget)
+        widget2.setObjectName("QWidget_1")
+        widget2.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
+
+        central_widget_layout =  Layout.create(
+            name='QVBoxLayout', parent=central_widget, children=[label1, self.widget1, label2, widget2])
+        # widget1布局
+        label3 = Label.create(parent=self.widget1, text="选择与键盘适配的方案", StyleSheet="font-size: 30px; ")
+
+        combobox = QComboBox(self.widget1)
+        combobox.addItems(self.items)
+        combobox.setCurrentText(self.items[int(config_js['key_press_programme'])])
+        combobox.setStyleSheet("font-size: 30px; ")
+        combobox.currentIndexChanged.connect(self.comboBoxIndexChanged)
+
+        widget1_layout = Layout.create(name='QHBoxLayout', parent=self.widget1, children=[label3, combobox])
+
+
+        # widget2布局
+
+        # 分隔线
+        line1 = QFrame(self)
+        line1.setFrameShape(QFrame.HLine)
+        line1.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        # 分隔线
+        line2 = QFrame(self)
+        line2.setFrameShape(QFrame.HLine)
+        line2.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        widget2_layout = Layout.create(name='QHBoxLayout', parent=widget2, children=[line1, line2])
+
+
+        # 将中心组件设置为滚动内容
+        self.setWidget(central_widget)
+    
+    def comboBoxIndexChanged(self, index):
+        # 处理下拉框选择变化事件
+        combo_box = self.widget1.sender()  # 获取发射信号的对象
+        selected_item = combo_box.currentText()# 获取选定选项的文本内容
+        config_js['key_press_programme'] = f'{self.items.index(selected_item)}'# 将方案对应的序号保存到配置文件
+
 
 
 class PageConfigFiles(QScrollArea):
-
+    """ 配置文件打开页面 """
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setStyleSheet("QScrollArea { border: transparent; }")
@@ -170,7 +238,7 @@ class PageConfigFiles(QScrollArea):
         self.construct()
         
 
-    def construct(self):
+    def construct(self) -> None:
         """ 页面UI搭建 """
         # 主布局
         # 中心组件
@@ -186,14 +254,14 @@ class PageConfigFiles(QScrollArea):
 
         widget1 = QWidget(central_widget)
         widget1.setObjectName("QWidget_1")
-        widget1.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; }")
+        widget1.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
 
         label2 = Label.create(
             parent=central_widget, text="样式文件", StyleSheet="font-size: 40px; font-weight: bold;")
 
         widget2 = QWidget(central_widget)
-        widget2.setObjectName("QWidget_2")
-        widget2.setStyleSheet("#QWidget_2 { background-color: #fdfdfd; }")
+        widget2.setObjectName("QWidget_1")
+        widget2.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
 
         central_widget_layout =  Layout.create(
             name='QVBoxLayout', parent=central_widget, children=[label1, widget1, label2, widget2])
@@ -255,7 +323,7 @@ class PageConfigFiles(QScrollArea):
         self.setWidget(central_widget)
 
     def open_selected_file(self, file_path) -> None:
-        """ 菜单项的绑定操作,用于打开选中的文件"""
+        """ 打开文件操作 """
         try:
             # 使用系统默认程序打开文件
             os.startfile(file_path)
@@ -266,6 +334,6 @@ class PageConfigFiles(QScrollArea):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # 可操作命令行参数
-    window = PageConfigFiles()
+    window = PageShortcutSetting()
     window.show()
     sys.exit(app.exec_())

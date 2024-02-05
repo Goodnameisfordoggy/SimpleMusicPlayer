@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-03 17:09:32
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingUI-2.py
+LastEditTime: 2024-02-05 00:14:38
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingUI.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -53,7 +53,7 @@ class SettingUI(QMainWindow):
         )
 
         action_open_settingUI = Action.create(
-            parent=self.app, text="配置", 
+            parent=self.app, text="设置", 
             triggered_callback= lambda: self.exec_rewrite(),
             superior=self.menu_setting
         )

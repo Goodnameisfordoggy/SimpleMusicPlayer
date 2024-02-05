@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-01-18 20:02:20
+LastEditTime: 2024-02-05 23:23:35
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\DataProtector.py
 Description: 
 
@@ -58,7 +58,6 @@ class DataProtector(object):
             config_js['file_total_time'] = self.main_window.file_total_time
             config_js['current_position'] = self.main_window.player.time
             config_js['need_cycle'] = self.main_window.need_cycle
-            config_js['key_press_programme'] = self.main_window.key_press_programme
             config_js['play_dict'] = self.main_window.play_dict
             config_js['current_music_name'] = os.path.basename(
                 self.main_window.play_dict.get(
