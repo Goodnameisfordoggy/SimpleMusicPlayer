@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-03 17:19:02
+LastEditTime: 2024-02-07 21:49:15
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\KeyboardListener.py
 Description: 
 
@@ -17,6 +17,8 @@ Copyright (c) ${2024} by ${HDJ}, All Rights Reserved.
 '''
 import pynput.keyboard
 import keyboard
+from PyQt5.QtWidgets import QShortcut
+from PyQt5.QtGui import QKeySequence
 from Simple_Qt import Menu, Action
 from DataProtector import style_css, config_js
 
@@ -48,6 +50,7 @@ class KeyboardListener(object):
             "2": self.key_press_p2,
             "3": self.key_press_p3,
             "4": self.key_press_p4,
+            "5": self.key_press_p5
         }
         # programme绑定main_window属性,方便类外操作
         programme = config_js['key_press_programme']
@@ -167,3 +170,16 @@ class KeyboardListener(object):
                 self.main_window.single_cycle_play()
         except AttributeError:
             pass
+    
+    def key_press_p5(self, key) -> None:
+        content = {
+        "播放下一首":[self.main_window.next_play(), 'Ctrl+D'],
+        "播放上一首":[self.main_window.previous_play(), 'Ctrl+A'],
+        "开始/暂停播放":[self.main_window.music_pause(), 'Ctrl+D'],
+        "随机播放":[self.main_window.random_play(), 'Ctrl+R'],
+        "循环播放":[self.main_window.single_cycle_play(), 'Ctrl+Q']
+    }
+        for action, (function, shortcut) in content.items():
+            shortcut = QShortcut(QKeySequence(shortcut), self)
+            shortcut.activated.connect(function)
+        

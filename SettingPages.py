@@ -1,11 +1,13 @@
 import os
 import sys
 import time
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox
+from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtWidgets import (QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, 
+QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox, QCheckBox)
 from PyQt5.QtGui import QPixmap
 from Simple_Qt import Label, PushButton, Layout
 from DataProtector import config_js
+from ShortcutEditer import ShortcutEditer
 
 
 class PageImageSetting(QScrollArea):
@@ -162,6 +164,14 @@ class PageShortcutSetting(QScrollArea):
         self.setWidgetResizable(True) # 组件可调整大小属性
         
         self.items = ["不使用", "主键盘+方向键", "Ctrl+主键盘", "数字键盘", "Ctrl+数字键盘"]
+        self.shortcut_content = {
+            '0': ["播放下一首", "播放上一首", "暂停/开始播放", "随机播放", "循环播放"],
+            '1': ['right', 'left', 'space', 'R', 'O'],
+            '2': ['Ctrl+D', 'Ctrl+A', 'Ctrl+S', 'Ctrl+R', 'Ctrl+Q'],
+            '3': ['6', '4', '5', '1', '0'],
+            '4': ['Ctrl+6', 'Ctrl+4', 'Ctrl+5', 'Ctrl+1', 'Ctrl+0']
+        }
+        self.shortcutEditer_group = []
 
         self.construct()
         
@@ -185,49 +195,226 @@ class PageShortcutSetting(QScrollArea):
         label2 = Label.create(
             parent=central_widget, text="自定义方案", StyleSheet="font-size: 40px; font-weight: bold;")
         
-        widget2 = QWidget(central_widget)
-        widget2.setObjectName("QWidget_1")
-        widget2.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
+        self.widget2 = QGroupBox(None, central_widget)
+        self.widget2.setObjectName("QGroupBox")
+        self.widget2.setStyleSheet("#QGroupBox { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
 
         central_widget_layout =  Layout.create(
-            name='QVBoxLayout', parent=central_widget, children=[label1, self.widget1, label2, widget2])
+            name='QVBoxLayout', parent=central_widget, children=[label1, self.widget1, label2, self.widget2])
         # widget1布局
         label3 = Label.create(parent=self.widget1, text="选择与键盘适配的方案", StyleSheet="font-size: 30px; ")
 
-        combobox = QComboBox(self.widget1)
-        combobox.addItems(self.items)
-        combobox.setCurrentText(self.items[int(config_js['key_press_programme'])])
-        combobox.setStyleSheet("font-size: 30px; ")
-        combobox.currentIndexChanged.connect(self.comboBoxIndexChanged)
+        self.combobox = QComboBox(self.widget1)
+        self.combobox.addItems(self.items)
+        self.combobox.setCurrentText(self.items[int(config_js['key_press_programme'])])
+        self.combobox.setStyleSheet("font-size: 30px; ")
+        self.combobox.currentIndexChanged.connect(self.comboBoxIndexChanged)
+        self.combobox.installEventFilter(self) #安装事件过滤器
 
-        widget1_layout = Layout.create(name='QHBoxLayout', parent=self.widget1, children=[label3, combobox])
+        layout1 = Layout.create(name='QHBoxLayout', children=[label3, self.combobox])
 
+        # 分隔线
+        self.line1 = QFrame(self)
+        self.line1.setFrameShape(QFrame.HLine)
+        self.line1.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label4 = Label.create(parent=self.widget1, text="播放下一首", StyleSheet="font-size: 30px; color: #bbbbbb; ")
+
+        self.label9 = Label.create(
+            parent=self.widget1, text=self.shortcut_content[config_js['key_press_programme']][0], 
+            Alignment=Qt.AlignHCenter | Qt.AlignVCenter, StyleSheet="font-size: 30px; color: #bbbbbb; font-weight: bold; ")
+
+        layout2 = Layout.create(name='QHBoxLayout', children=[self.label4, self.label9])
+
+        self.line2 = QFrame(self)
+        self.line2.setFrameShape(QFrame.HLine)
+        self.line2.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label5 = Label.create(parent=self.widget1, text="播放上一首", StyleSheet="font-size: 30px; color: #bbbbbb; ")
+
+        self.label10 = Label.create(
+            parent=self.widget1, text=self.shortcut_content[config_js['key_press_programme']][1], 
+            Alignment=Qt.AlignHCenter | Qt.AlignVCenter, StyleSheet="font-size: 30px; color: #bbbbbb; font-weight: bold; ")
+
+        layout3 = Layout.create(name='QHBoxLayout', children=[self.label5, self.label10])
+
+        self.line3 = QFrame(self)
+        self.line3.setFrameShape(QFrame.HLine)
+        self.line3.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label6 = Label.create(parent=self.widget1, text="暂停/开始播放", StyleSheet="font-size: 30px; color: #bbbbbb; ")
+
+        self.label11 = Label.create(
+            parent=self.widget1, text=self.shortcut_content[config_js['key_press_programme']][2], 
+            Alignment=Qt.AlignHCenter | Qt.AlignVCenter, StyleSheet="font-size: 30px; color: #bbbbbb; font-weight: bold; ")
+
+        layout4 = Layout.create(name='QHBoxLayout', children=[self.label6, self.label11])
+
+        self.line4 = QFrame(self)
+        self.line4.setFrameShape(QFrame.HLine)
+        self.line4.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label7 = Label.create(parent=self.widget1, text="随机播放", StyleSheet="font-size: 30px; color: #bbbbbb; ")
+
+        self.label12 = Label.create(
+            parent=self.widget1, text=self.shortcut_content[config_js['key_press_programme']][3],
+            Alignment=Qt.AlignHCenter | Qt.AlignVCenter, StyleSheet="font-size: 30px; color: #bbbbbb; font-weight: bold; ")
+
+        layout5 = Layout.create(name='QHBoxLayout', children=[self.label7, self.label12])
+
+        self.line5 = QFrame(self)
+        self.line5.setFrameShape(QFrame.HLine)
+        self.line5.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label8 = Label.create(parent=self.widget1, text="循环播放", StyleSheet="font-size: 30px; color: #bbbbbb; ")
+
+        self.label13 = Label.create(
+            parent=self.widget1, text=self.shortcut_content[config_js['key_press_programme']][4], 
+            Alignment=Qt.AlignHCenter | Qt.AlignVCenter, StyleSheet="font-size: 30px; color: #bbbbbb; font-weight: bold; ")
+
+        layout6 = Layout.create(name='QHBoxLayout', children=[self.label8, self.label13])
+
+
+        self.widget1_layout = Layout.create(
+            name='QVBoxLayout', parent=self.widget1, 
+            children=[layout1, self.line1, layout2, self.line2, layout3, self.line3, layout4, self.line4,
+                    layout5, self.line5, layout6])
+
+        if config_js['key_press_programme'] == '0':
+            self.showKeyPressProgramme()
 
         # widget2布局
+        self.line10 = QFrame(self)
+        self.line10.setFrameShape(QFrame.HLine)
+        self.line10.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.checkbox = QCheckBox('使用该方案', self.widget2)
+        self.checkbox.setStyleSheet("font-weight: bold; ")
+        self.checkbox.stateChanged.connect(self.checkboxStateChanged)
+        self.checkbox.setFocusPolicy(Qt.NoFocus)# 禁用键盘焦点
+
+        self.label14 = Label.create(
+            parent=self.widget2, text="播放下一首", Alignment=Qt.AlignVCenter,
+            StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
+        
+        shortcutEditer1 = ShortcutEditer()
+        self.installEventFilter(shortcutEditer1)
+
+        layout7 = Layout.create(name='QHBoxLayout', children=[self.label14, shortcutEditer1])
+        # 分隔线
+        line6 = QFrame(self)
+        line6.setFrameShape(QFrame.HLine)
+        line6.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label15 = Label.create(
+            parent=self.widget2, text="播放上一首", Alignment=Qt.AlignVCenter,
+            StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
+        
+        shortcutEditer2 = ShortcutEditer()
+        self.installEventFilter(shortcutEditer2)
+
+        layout8 = Layout.create(name='QHBoxLayout', children=[self.label15, shortcutEditer2])
 
         # 分隔线
-        line1 = QFrame(self)
-        line1.setFrameShape(QFrame.HLine)
-        line1.setStyleSheet("QFrame { color: #f0f0f0; }")
+        line7 = QFrame(self)
+        line7.setFrameShape(QFrame.HLine)
+        line7.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label16 = Label.create(
+            parent=self.widget2, text="开始/暂停播放", Alignment=Qt.AlignVCenter,
+            StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
+
+        layout9 = Layout.create(name='QHBoxLayout', children=[self.label16])
 
         # 分隔线
-        line2 = QFrame(self)
-        line2.setFrameShape(QFrame.HLine)
-        line2.setStyleSheet("QFrame { color: #f0f0f0; }")
+        line8 = QFrame(self)
+        line8.setFrameShape(QFrame.HLine)
+        line8.setStyleSheet("QFrame { color: #f0f0f0; }")
 
-        widget2_layout = Layout.create(name='QHBoxLayout', parent=widget2, children=[line1, line2])
+        self.label17 = Label.create(
+            parent=self.widget2, text="随机播放", Alignment=Qt.AlignVCenter,
+            StyleSheet="font-size: 30px; color: #000000; min-height: 55px;")
+
+        layout10 = Layout.create(name='QHBoxLayout', children=[self.label17])
+
+        # 分隔线
+        line9 = QFrame(self)
+        line9.setFrameShape(QFrame.HLine)
+        line9.setStyleSheet("QFrame { color: #f0f0f0; }")
+
+        self.label18 = Label.create(
+            parent=self.widget2, text="循环播放", Alignment=Qt.AlignVCenter,
+            StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
+
+        layout11 = Layout.create(name='QHBoxLayout', children=[self.label18])
+
+        widget2_layout = Layout.create(
+            name='QVBoxLayout', parent=self.widget2, children=[self.checkbox, self.line10, layout7, line6, layout8, line7, layout9, line8, 
+            layout10, line9, layout11])
 
 
         # 将中心组件设置为滚动内容
         self.setWidget(central_widget)
+
+    def eventFilter(self, obj, event):
+        """事件过滤器"""
+        if isinstance(obj, QComboBox) and event.type() == QEvent.Wheel:
+            # 捕获滚轮事件并忽略
+            return True
+        # 其他事件正常继承
+        return super().eventFilter(obj, event)
     
-    def comboBoxIndexChanged(self, index):
-        # 处理下拉框选择变化事件
+    def comboBoxIndexChanged(self, index) -> None:
+        """处理下拉框选择变化事件"""
         combo_box = self.widget1.sender()  # 获取发射信号的对象
         selected_item = combo_box.currentText()# 获取选定选项的文本内容
         config_js['key_press_programme'] = f'{self.items.index(selected_item)}'# 将方案对应的序号保存到配置文件
+        # 设置用于展示方案组件的可见性
+        if selected_item != self.items[0]:
+            self.showKeyPressProgramme(visible=True)
+            self.checkbox.setChecked(False) 
+        else:
+            self.showKeyPressProgramme()
 
+    def showKeyPressProgramme(self, programme_index = config_js['key_press_programme'], visible = False) -> None:
+        """展示当前所选择的方案内容"""
+        # 分隔线
+        self.line1.setVisible(visible)
+        self.label4.setVisible(visible)
+        self.line2.setVisible(visible)
+        self.label5.setVisible(visible)
+        self.line3.setVisible(visible)
+        self.label6.setVisible(visible)
+        self.line4.setVisible(visible)
+        self.label7.setVisible(visible)
+        self.line5.setVisible(visible)
+        self.label8.setVisible(visible)
+        self.label9.setVisible(visible)
+        self.label10.setVisible(visible)
+        self.label11.setVisible(visible)
+        self.label12.setVisible(visible)
+        self.label13.setVisible(visible)
+        if visible:
+            self.label9.setText(self.shortcut_content[config_js['key_press_programme']][0])
+            self.label10.setText(self.shortcut_content[config_js['key_press_programme']][1])
+            self.label11.setText(self.shortcut_content[config_js['key_press_programme']][2])
+            self.label12.setText(self.shortcut_content[config_js['key_press_programme']][3])
+            self.label13.setText(self.shortcut_content[config_js['key_press_programme']][4])
 
+    def checkboxStateChanged(self, state) -> None:
+        # 处理复选框状态变化事件
+        sender = self.sender()  # 获取发射信号的对象
+        if state == 2:  # 2 表示复选框被选中
+            # 将内置方案置于不使用项
+            self.combobox.setCurrentText(self.items[0])
+            # 内置方案展示设为不可见
+            self.showKeyPressProgramme()
+            # 切换方案序号保存到配置文件
+            config_js['key_press_programme'] = '0'
+            config_js['use_custom_shortcut_keys'] = True
+        else:
+            config_js['use_custom_shortcut_keys'] = False
+            print(f'复选框 {sender.text()} 被取消选中')
 
 class PageConfigFiles(QScrollArea):
     """ 配置文件打开页面 """

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-05 00:14:38
+LastEditTime: 2024-02-06 19:08:50
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingUI.py
 Description: 
 
@@ -23,7 +23,33 @@ from Simple_Qt import PushButton, Menu, Action
 from DataProtector import style_css
 from SettingPages import PageSongList, PageImageSetting, PageShortcutSetting, PageConfigFiles
 
-
+default_button_style = """
+    QPushButton { 
+        min-height: 60px;      
+        text-align: left; 
+        font-weight: bold; 
+        font-size: 33px; 
+        font-family: KaiTi;
+        background-color: white;
+        border: 2px solid rgb(232, 232, 232);
+    }QPushButton:hover {
+        min-height: 60px;   
+        font-size: 50px; 
+        background-color: #eff6ff;
+    }
+    """
+checked_button_style="""
+    QPushButton { 
+        min-height: 60px;      
+        text-align: left; 
+        font-weight: bold; 
+        font-size: 50px; 
+        font-family: KaiTi;
+        color: #3388ff;
+        background-color: #eff6ff;
+        border: 2px solid #3388ff;
+    }
+    """
 class SettingUI(QMainWindow):
     """ 一级菜单--设置 """
 
@@ -35,7 +61,8 @@ class SettingUI(QMainWindow):
         self.setWindowTitle("SettingUI")
         self.resize(width, height)
         # 底层变量
-        # self.menu_setting = None  # 一级菜单对象
+        self.menu_setting = None  # 一级菜单对象
+        self.current_index = 0 # 当前页数
         # 方法绑定
         self.InitUI()
         self.build_menu()
@@ -72,9 +99,9 @@ class SettingUI(QMainWindow):
         main_layout = QHBoxLayout(central_widget)        
         
         left_layout = QVBoxLayout()
-        right_layout = QStackedLayout()
+        self.right_layout = QStackedLayout()
         main_layout.addLayout(left_layout, stretch = 0)
-        main_layout.addLayout(right_layout, stretch = 1)
+        main_layout.addLayout(self.right_layout, stretch = 1)
 
         # 左侧列表框
         self.button_list_widget = QListWidget(self)
@@ -83,48 +110,42 @@ class SettingUI(QMainWindow):
 
         # 按钮选项
         button_name_list = ["歌单", "背景图", "快捷键", "配置文件"]
-        # button_widget_list = []
+        self.button_group = [] # 按钮组,用于存放按钮实例
         for index, name in enumerate(button_name_list): # 页面顺序与button_name_list内容一致
             button = PushButton.create(
                 parent=self.button_list_widget, text=" " + name,
-                clicked_callback=[right_layout.setCurrentIndex, index],
-                ObjectName="Button",
-                StyleSheet=
-                    """
-                    QPushButton { 
-                        min-height: 60px;      
-                        text-align: left; 
-                        font-weight: bold; 
-                        font-size: 50px; 
-                        font-family: KaiTi;
-                        background-color: white;
-                        border: 2px solid rgb(232, 232, 232);
-                    }QPushButton:hover {
-                        background-color: lightblue; 
-                    }
-                    """
+                clicked_callback=[self.button_clicked_callback, index],
+                # ObjectName="Button",
+                StyleSheet=default_button_style
             )
-            # button.clicked.connect(lambda clicked, idx=index: right_layout.setCurrentIndex(idx))
+            self.button_group.append(button)
             item = QListWidgetItem(self.button_list_widget)
             item.setSizeHint(button.sizeHint())  # 将项目大小设置为按钮大小
             self.button_list_widget.setItemWidget(item, button)  # 将按钮关联到项目上
 
+        # 初始化第一个按钮处于选中状态
+        self.button_group[0].setStyleSheet(checked_button_style)
+
         # 右侧堆叠子页
         page_SongList = PageSongList(self)
-        right_layout.addWidget(page_SongList)
+        self.right_layout.addWidget(page_SongList)
         page_ImageSetting = PageImageSetting(self)
-        right_layout.addWidget(page_ImageSetting)
+        self.right_layout.addWidget(page_ImageSetting)
         page_ShortcutSetting = PageShortcutSetting(self)
-        right_layout.addWidget(page_ShortcutSetting)
+        self.right_layout.addWidget(page_ShortcutSetting)
         page_ConfigFiles = PageConfigFiles(self)
-        right_layout.addWidget(page_ConfigFiles)
+        self.right_layout.addWidget(page_ConfigFiles)
 
-
-
-
-
-        
-
+    
+    def button_clicked_callback(self, index):
+        # 将当前已选中的按钮样式恢复
+        self.button_group[self.current_index].setStyleSheet(default_button_style)
+        # 储存当前选中的按钮索引
+        self.current_index = index
+        # 将当前选中的按钮样式改变为选中状态
+        self.button_group[index].setStyleSheet(checked_button_style)
+        # 堆叠布局换页
+        self.right_layout.setCurrentIndex(index)
 
 
 if __name__ == "__main__":

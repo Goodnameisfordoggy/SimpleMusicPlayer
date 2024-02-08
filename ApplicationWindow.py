@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-05 23:30:42
+LastEditTime: 2024-02-08 22:11:47
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -19,7 +19,7 @@ import glob
 import os
 import random
 import pyglet
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from Simple_Qt import Label, PushButton, PackingModificationMethod
@@ -353,3 +353,9 @@ class ApplicationWindow(QMainWindow):
         # 鼠标释放时清空起始位置
         if hasattr(self, 'drag_start_position'):
             delattr(self, 'drag_start_position')
+    
+    def closeEvent(self, event) -> None:
+        """ 一级UI窗口关闭事件 """
+        # 调用父类的 closeEvent 方法，确保原有的行为能够正常执行
+        super().closeEvent(event)
+        QApplication.closeAllWindows()

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-03 22:39:03
+LastEditTime: 2024-02-08 22:09:23
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SearchUI.py
 Description: 
 
@@ -249,7 +249,6 @@ class SearchUI(QDialog):
 
     def closeEvent(self, event) -> None:
         """ 二级UI窗口关闭方法重写 """
-        print("SearchUI: closeEvent")
         # 将一级UI界面还原到上一次最小化前的位置
         self.main_window.showNormal()
         # 调用父类的 closeEvent 方法，确保原有的行为能够正常执行
