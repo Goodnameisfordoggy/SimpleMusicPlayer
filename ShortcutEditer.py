@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-02-08 22:32:28
+LastEditTime: 2024-02-09 16:22:19
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ShortcutEditer.py
 Description: 
 
@@ -22,54 +22,62 @@ from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QKeySequence, QPainter, QBrush, QColor
 from DataProtector import config_js
 
-with open(r"D:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\profiles\PlayerConfig.json", 'r', encoding='utf-8') as config_json:
-    config_js = json.load(config_json)
+DEFAULT_STYLE = """
+    QWidget{ 
+        min-height: 50px;
+        background-color: white; 
+        font-size: 36px; 
+}"""
+   
 
+CHECKED_STYLE = """
+    QWidget{ 
+        min-height: 50px;
+        background-color: white; 
+        font-size: 36px; 
+        border: 1px solid #3388ff; 
+        color: #3388ff;
+}"""
+            
+     
 class ShortcutEditer(QWidget):
-    def __init__(self):
+    """快捷键识别组件"""
+    def __init__(self, name = 'ShortcutEditer', text="", saveLocation = None, group_list = []):
+        """
+        args: 
+        saveLocation: 快捷键的保存位置,将存入str
+        group_list: 存放多个ShortcutEditer组件的Group_list
+        """
         super().__init__()
-        self.setStyleSheet(
-            """
-            QWidget{ 
-                min-height: 50px;
-                background-color: white; 
-                font-size: 36px; 
-            }"""
-        )
-        
+        self.name = name
+        self.text = text
+        self.saveLocation = saveLocation
+        self.group_list = group_list
+        self.setStyleSheet(DEFAULT_STYLE)
+        self.setFocusPolicy(Qt.StrongFocus) # 启用键盘焦点
+        self.installEventFilter(self) # 安装事件过滤器拦截自身事件
         self.init_ui()
 
     def init_ui(self):
         layout = QHBoxLayout()
 
-        self.label = QLabel('Press a shortcut key...')
+        self.label = QLabel(self.text)
         self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        self.setStyleSheet("QLabel { min-height: 60px; font-size: 36px; }")
         layout.addWidget(self.label)
-
-        self.installEventFilter(self)
-
         self.setLayout(layout)
-        self.setWindowTitle('Shortcut Detection')
-        self.setGeometry(300, 300, 300, 200)
 
     def eventFilter(self, obj, event):
-
+        """事件过滤器"""
         if event.type() == event.MouseButtonPress:
-            print("Mouse button pressed in ShortcutEditer")
-            self.setStyleSheet(
-                """
-                QWidget{ 
-                    min-height: 50px;
-                    background-color: white; 
-                    font-size: 36px; 
-                    border: 1px solid #3388ff; 
-                    color: #3388ff;
-                }"""
-            )
+            if self.group_list:
+                # 移除组内所有组件的选中样式
+                for shortcutEditer in self.group_list:
+                    shortcutEditer.setStyleSheet(DEFAULT_STYLE)
+            # 为选中组件添加选中样式
+            self.setStyleSheet(CHECKED_STYLE)
 
         if event.type() == QEvent.KeyPress:
-            modifiers = event.modifiers()  # 获取修饰键
+            modifiers = event.modifiers()  # 获取修饰键 Control, Shift, Meta(Win), Alt
             key = event.key()
           
             if modifiers != Qt.NoModifier:
@@ -83,22 +91,45 @@ class ShortcutEditer(QWidget):
                 key_str = ""
                 
             if not key_str:
-                # config_js['custom_shortcut_keys']['播放下一首'] = modifier_str.rstrip('+')
+                self.vrt_save('json', modifier_str.rstrip('+'), config_js, self.saveLocation)
                 self.label.setText(modifier_str.rstrip('+'))
             else:
-                # config_js['custom_shortcut_keys']['播放下一首'] = modifier_str + key_str
+                self.vrt_save('json', modifier_str + key_str, config_js, self.saveLocation)
                 self.label.setText(modifier_str + key_str)
 
-            try:
-                 # 打开json文件
-                with open(r"profiles\PlayerConfig.json", 'w', encoding='utf-8') as config_json:
-                    # json文件写入 ensure_ascii=False禁用Unicode转义确保写入的文件包含原始的非ASCII字符。
-                    json.dump(config_js, config_json, ensure_ascii=False, indent=4)
-            except NameError:
-                print("NameError!: 请检查json文件的位置.")
+    
 
         return super().eventFilter(obj, event)
+    
+    def vrt_save(self, toType: str | None = None, data = None, structure=..., location_list = []):
+        """
+        多功能数据保存方法(variety_save)
 
+        args: 
+
+        toType: 保存的形式                  json
+        data; 保存的数据                    类型根据保存形式而变
+        structure: 保存结构对象             结构通常是读取文件后常用的数据结构,如json->dict
+        location_list: 位置列表             用来描述数据保存的具体位置,如['a', 'b']表示{"a": {"b": xx} }
+        """
+        if not toType:
+            raise ValueError('未选择保存类型!')
+        elif not data:
+            raise ValueError('保存内容不能为空!')
+        elif not location_list:
+            raise ValueError('保存位置不能为空!')
+        
+        if toType == 'json':
+            if len(location_list) == 1:
+                structure[location_list[0]] = data
+            elif len(location_list) == 2:
+                structure[location_list[0]][location_list[1]] = data
+            elif len(location_list) == 3:
+                structure[location_list[0]][location_list[1]][location_list[2]] = data
+            elif len(location_list) == 4:
+                structure[location_list[0]][location_list[1]][location_list[2]][location_list[3]] = data
+            else:
+                raise ValueError('位置列表长度超出限制')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

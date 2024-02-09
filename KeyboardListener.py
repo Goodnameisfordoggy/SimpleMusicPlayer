@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-07 21:49:15
+LastEditTime: 2024-02-09 16:55:56
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\KeyboardListener.py
 Description: 
 
@@ -52,7 +52,6 @@ class KeyboardListener(object):
             "4": self.key_press_p4,
             "5": self.key_press_p5
         }
-        # programme绑定main_window属性,方便类外操作
         programme = config_js['key_press_programme']
         # 关闭键盘快捷方式
         if programme is None:
@@ -60,6 +59,8 @@ class KeyboardListener(object):
         # 选择存在的快捷方案
         elif programme in programme_map.keys():
             return programme_map.get(f'{programme}')(key)
+        elif config_js['use_custom_shortcut_keys']:
+            return programme_map.get('5')(key)
         # 不存在的快捷方案
         else:
             return None
@@ -172,14 +173,32 @@ class KeyboardListener(object):
             pass
     
     def key_press_p5(self, key) -> None:
-        content = {
-        "播放下一首":[self.main_window.next_play(), 'Ctrl+D'],
-        "播放上一首":[self.main_window.previous_play(), 'Ctrl+A'],
-        "开始/暂停播放":[self.main_window.music_pause(), 'Ctrl+D'],
-        "随机播放":[self.main_window.random_play(), 'Ctrl+R'],
-        "循环播放":[self.main_window.single_cycle_play(), 'Ctrl+Q']
-    }
-        for action, (function, shortcut) in content.items():
-            shortcut = QShortcut(QKeySequence(shortcut), self)
-            shortcut.activated.connect(function)
+    #     content = {
+    #     "播放下一首":[self.main_window.next_play()],
+    #     "播放上一首":[self.main_window.previous_play()],
+    #     "开始/暂停播放":[self.main_window.music_pause()],
+    #     "随机播放":[self.main_window.random_play()],
+    #     "循环播放":[self.main_window.single_cycle_play()]
+    # }
+        try:
+            # 下一首
+            if keyboard.is_pressed(config_js['custom_shortcut_keys']['next_play']):
+                self.main_window.next_play()
+            # 上一首
+            elif keyboard.is_pressed(config_js['custom_shortcut_keys']['previous_play']):
+                self.main_window.previous_play()
+            # 暂停/开始
+            elif keyboard.is_pressed(config_js['custom_shortcut_keys']['music_pause']):
+                self.main_window.music_pause()
+            # 随机播放
+            elif keyboard.is_pressed(config_js['custom_shortcut_keys']['random_play']):
+                self.main_window.random_play()
+            # 单曲循环
+            elif keyboard.is_pressed(config_js['custom_shortcut_keys']['single_cycle_play']):
+                self.main_window.single_cycle_play()
+        except AttributeError:
+            pass
+
+        
+
         

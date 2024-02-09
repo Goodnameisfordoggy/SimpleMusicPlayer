@@ -3,11 +3,11 @@ import sys
 import time
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, 
-QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox, QCheckBox)
+QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel)
 from PyQt5.QtGui import QPixmap
 from Simple_Qt import Label, PushButton, Layout
 from DataProtector import config_js
-from ShortcutEditer import ShortcutEditer
+from ShortcutEditer import ShortcutEditer, DEFAULT_STYLE
 
 
 class PageImageSetting(QScrollArea):
@@ -284,6 +284,15 @@ class PageShortcutSetting(QScrollArea):
             self.showKeyPressProgramme()
 
         # widget2布局
+        for i in range(5):
+            action_list =['next_play', 'previous_play', 'music_pause', 'random_play', 'single_cycle_play']
+            Editer = ShortcutEditer(
+                f'Editer{i + 1}', 
+                text= config_js['custom_shortcut_keys'][action_list[i]],
+                saveLocation = ['custom_shortcut_keys', action_list[i]],
+                group_list = self.shortcutEditer_group)
+            self.shortcutEditer_group.append(Editer)
+
         self.line10 = QFrame(self)
         self.line10.setFrameShape(QFrame.HLine)
         self.line10.setStyleSheet("QFrame { color: #f0f0f0; }")
@@ -292,15 +301,14 @@ class PageShortcutSetting(QScrollArea):
         self.checkbox.setStyleSheet("font-weight: bold; ")
         self.checkbox.stateChanged.connect(self.checkboxStateChanged)
         self.checkbox.setFocusPolicy(Qt.NoFocus)# 禁用键盘焦点
+        if config_js['use_custom_shortcut_keys']:
+            self.checkbox.setChecked(True)
 
         self.label14 = Label.create(
             parent=self.widget2, text="播放下一首", Alignment=Qt.AlignVCenter,
             StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
         
-        shortcutEditer1 = ShortcutEditer()
-        self.installEventFilter(shortcutEditer1)
-
-        layout7 = Layout.create(name='QHBoxLayout', children=[self.label14, shortcutEditer1])
+        layout7 = Layout.create(name='QHBoxLayout', children=[self.label14, self.shortcutEditer_group[0]])
         # 分隔线
         line6 = QFrame(self)
         line6.setFrameShape(QFrame.HLine)
@@ -310,10 +318,7 @@ class PageShortcutSetting(QScrollArea):
             parent=self.widget2, text="播放上一首", Alignment=Qt.AlignVCenter,
             StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
         
-        shortcutEditer2 = ShortcutEditer()
-        self.installEventFilter(shortcutEditer2)
-
-        layout8 = Layout.create(name='QHBoxLayout', children=[self.label15, shortcutEditer2])
+        layout8 = Layout.create(name='QHBoxLayout', children=[self.label15, self.shortcutEditer_group[1]])
 
         # 分隔线
         line7 = QFrame(self)
@@ -324,7 +329,7 @@ class PageShortcutSetting(QScrollArea):
             parent=self.widget2, text="开始/暂停播放", Alignment=Qt.AlignVCenter,
             StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
 
-        layout9 = Layout.create(name='QHBoxLayout', children=[self.label16])
+        layout9 = Layout.create(name='QHBoxLayout', children=[self.label16, self.shortcutEditer_group[2]])
 
         # 分隔线
         line8 = QFrame(self)
@@ -335,7 +340,7 @@ class PageShortcutSetting(QScrollArea):
             parent=self.widget2, text="随机播放", Alignment=Qt.AlignVCenter,
             StyleSheet="font-size: 30px; color: #000000; min-height: 55px;")
 
-        layout10 = Layout.create(name='QHBoxLayout', children=[self.label17])
+        layout10 = Layout.create(name='QHBoxLayout', children=[self.label17, self.shortcutEditer_group[3]])
 
         # 分隔线
         line9 = QFrame(self)
@@ -346,7 +351,7 @@ class PageShortcutSetting(QScrollArea):
             parent=self.widget2, text="循环播放", Alignment=Qt.AlignVCenter,
             StyleSheet="font-size: 30px; color: #000000; min-height: 55px; ")
 
-        layout11 = Layout.create(name='QHBoxLayout', children=[self.label18])
+        layout11 = Layout.create(name='QHBoxLayout', children=[self.label18, self.shortcutEditer_group[4]])
 
         widget2_layout = Layout.create(
             name='QVBoxLayout', parent=self.widget2, children=[self.checkbox, self.line10, layout7, line6, layout8, line7, layout9, line8, 
@@ -378,7 +383,7 @@ class PageShortcutSetting(QScrollArea):
 
     def showKeyPressProgramme(self, programme_index = config_js['key_press_programme'], visible = False) -> None:
         """展示当前所选择的方案内容"""
-        # 分隔线
+        # 切换可见性
         self.line1.setVisible(visible)
         self.label4.setVisible(visible)
         self.line2.setVisible(visible)
@@ -394,6 +399,7 @@ class PageShortcutSetting(QScrollArea):
         self.label11.setVisible(visible)
         self.label12.setVisible(visible)
         self.label13.setVisible(visible)
+        # 更换对应方案的文本显示
         if visible:
             self.label9.setText(self.shortcut_content[config_js['key_press_programme']][0])
             self.label10.setText(self.shortcut_content[config_js['key_press_programme']][1])
@@ -402,7 +408,7 @@ class PageShortcutSetting(QScrollArea):
             self.label13.setText(self.shortcut_content[config_js['key_press_programme']][4])
 
     def checkboxStateChanged(self, state) -> None:
-        # 处理复选框状态变化事件
+        """处理复选框状态变化事件"""
         sender = self.sender()  # 获取发射信号的对象
         if state == 2:  # 2 表示复选框被选中
             # 将内置方案置于不使用项
@@ -414,7 +420,24 @@ class PageShortcutSetting(QScrollArea):
             config_js['use_custom_shortcut_keys'] = True
         else:
             config_js['use_custom_shortcut_keys'] = False
-            print(f'复选框 {sender.text()} 被取消选中')
+
+    def mousePressEvent(self, event):
+        """鼠标点击事件"""
+        # 获取鼠标事件的位置
+        pos = event.pos()
+        # 找到该位置的子部件
+        child_widget = self.childAt(pos)
+        # 检查列表
+        check_list = []
+        # 当点击父组件的非shortcutEditer部分时，也还原其样式为默认样式
+        for shortcutEditer in self.shortcutEditer_group:
+            children = shortcutEditer.findChildren(QLabel)
+            check_list.extend(children)
+        # 鼠标点击发生在shortcutEditer组件范围之外,恢复其样式为默认样式
+        if child_widget not in self.shortcutEditer_group and child_widget not in check_list:
+            for shortcutEditer in self.shortcutEditer_group:
+                shortcutEditer.setStyleSheet(DEFAULT_STYLE)
+                
 
 class PageConfigFiles(QScrollArea):
     """ 配置文件打开页面 """
