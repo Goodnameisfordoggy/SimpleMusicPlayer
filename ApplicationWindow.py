@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-08 22:11:47
+LastEditTime: 2024-02-26 21:44:53
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -324,8 +324,6 @@ class ApplicationWindow(QMainWindow):
         menu_setting = SettingUI(app=self)
 
         menu_chang_folder_path = ChangeFolderMenu(self)
-
-        menu_search_for_target_song = SearchUI(self)
 
     # 窗口跟随鼠标移动(单击拖动窗口)
     def mousePressEvent(self, event) -> None:

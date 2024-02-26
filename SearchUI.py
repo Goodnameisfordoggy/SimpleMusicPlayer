@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-08 22:09:23
+LastEditTime: 2024-02-26 22:05:30
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SearchUI.py
 Description: 
 
@@ -28,10 +28,12 @@ from DataProtector import IMAGE_FOLDER_PATH, style_css, style_js, config_js
 class SearchUI(QDialog):
     """ 歌曲搜索界面 """
 
-    def __init__(self, main_window = None, width=1250, height=950) -> None:
+    def __init__(self, main_window = None, parent = None, width=1250, height=950) -> None:
         super().__init__()
         # 一级UI对象传入
         self.main_window = main_window
+        self.parent = parent
+        
 
         # 设置二级UI
         self.setWindowTitle("歌曲查询中...")
@@ -50,22 +52,13 @@ class SearchUI(QDialog):
     def build_menu(self) -> None:
         """ 创建菜单用于呼出二级UI(SearchUI) """
 
-        # 一级菜单
-        self.menu_search_for_target_song = Menu.create(
-            parent=self.main_window,
-            title='查询界面',
-            ObjectName='menu--1',
-            StyleSheet=style_css,
-            superior=self.main_window.menubar
-        )
-
         # 二级菜单
-        entry_action = Action.create(
-            parent=self.main_window,
+        action_open_searchUI = Action.create(
+            parent=self.parent,
             text="打开查询界面",
             triggered_callback=lambda: self.exec_rewrite(),
             Icon_path=IMAGE_FOLDER_PATH + r"\Beauty With Headset.png",
-            superior=self.menu_search_for_target_song
+            superior=self.parent.menu_setting
         )
 
     def exec_rewrite(self) -> None:

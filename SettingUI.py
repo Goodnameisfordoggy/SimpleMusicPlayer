@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-06 19:08:50
+LastEditTime: 2024-02-26 22:01:28
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingUI.py
 Description: 
 
@@ -21,6 +21,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QWidget, QHBoxLayout, QMainWindow, QVBoxLayout, QStackedLayout
 from Simple_Qt import PushButton, Menu, Action
 from DataProtector import style_css
+from SearchUI import SearchUI
 from SettingPages import PageSongList, PageImageSetting, PageShortcutSetting, PageConfigFiles
 
 default_button_style = """
@@ -78,6 +79,8 @@ class SettingUI(QMainWindow):
             StyleSheet=style_css,
             superior=self.app.menubar
         )
+
+        action_open_searchUI = SearchUI(self.app, self)
 
         action_open_settingUI = Action.create(
             parent=self.app, text="设置", 

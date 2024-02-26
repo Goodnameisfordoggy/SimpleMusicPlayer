@@ -22,7 +22,15 @@
     "file_total_time": 0,
     "current_position": 0.0,
     "need_cycle": false,
-    "key_press_programme": null,
+    "key_press_programme": "0",
     "current_music_name": "",
+    "use_custom_shortcut_keys": false,
+    "custom_shortcut_keys": {
+        "next_play": "按下快捷键",
+        "previous_play": "按下快捷键",
+        "music_pause": "按下快捷键",
+        "random_play": "按下快捷键",
+        "single_cycle_play": "按下快捷键"
+    },
     "play_dict": {}
 }

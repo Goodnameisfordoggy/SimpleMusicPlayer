@@ -9,6 +9,17 @@ from Simple_Qt import Label, PushButton, Layout
 from DataProtector import config_js
 from ShortcutEditer import ShortcutEditer, DEFAULT_STYLE
 
+class PageSongList(QScrollArea):
+
+    def __init__(self, parent: QWidget | None = None) -> None:
+            super().__init__(parent)
+            self.setStyleSheet("QScrollArea { border: transparent; }")
+            self.setWidgetResizable(True) # 组件可调整大小属性
+            self.construct()
+
+    def construct(self) -> None:
+        """ 页面UI搭建 """
+        
 
 class PageImageSetting(QScrollArea):
     """ 背景图片/图标设置页面 """
@@ -147,13 +158,6 @@ class PageImageSetting(QScrollArea):
                 os.execv(sys.executable, ['python3', current_file])
             else:
                 QMessageBox.information(self, '提示', 'APP将在下次启动时使用新图片', QMessageBox.Ok)
-
-
-class PageSongList(QScrollArea):
-
-    def construct(self) -> None:
-        """ 页面UI搭建 """
-        pass
 
 
 class PageShortcutSetting(QScrollArea):
@@ -541,9 +545,8 @@ class PageConfigFiles(QScrollArea):
             QMessageBox.critical(self.main_window, 'FileNotFoundError', '文件不存在,请检查文件位置', QMessageBox.Ok)
     
 
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # 可操作命令行参数
-    window = PageShortcutSetting()
+    window = PageSongList()
     window.show()
     sys.exit(app.exec_())
