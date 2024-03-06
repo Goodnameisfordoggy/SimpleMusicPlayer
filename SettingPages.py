@@ -11,16 +11,98 @@ from ShortcutEditer import ShortcutEditer, DEFAULT_STYLE
 
 class PageSongList(QScrollArea):
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    def __init__(self, parent: QWidget | None = None, app = None) -> None:
             super().__init__(parent)
+            self.app = app
             self.setStyleSheet("QScrollArea { border: transparent; }")
             self.setWidgetResizable(True) # 组件可调整大小属性
+            self.fst_items_name = [sublist[0] for sublist in config_js['music_folders_path']]
             self.construct()
 
     def construct(self) -> None:
         """ 页面UI搭建 """
+        # 主布局
+        # 中心组件
+        self.central_widget = QGroupBox(None, self)
+        self.central_widget.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
+        self.central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
         
+        main_layout = Layout.create(name="QVBoxLayout", parent=self, children=[self.central_widget])
 
+        # 中心组件布局
+        label1 = Label.create(
+            parent=self.central_widget, text="歌单分组", 
+            StyleSheet=
+            """
+            QLabel { font-family: 楷体; font-size: 38px; font-weight: bold;} 
+            """
+        )
+
+        label2 = Label.create(
+            parent=self.central_widget, text="歌单", 
+            StyleSheet=
+            """
+            QLabel { font-family: 楷体; font-size: 38px; font-weight: bold;} 
+            """
+        )
+
+        comboBox1 = QComboBox()
+        comboBox1.addItems(self.fst_items_name)
+        comboBox1.currentIndexChanged.connect(self.comboBoxIndexChanged1)
+        comboBox1.installEventFilter(self)
+        
+        self.comboBox2 = QComboBox()
+        self.comboBox2.currentIndexChanged.connect(self.comboBoxIndexChanged2)
+        self.comboBox2.installEventFilter(self)
+        
+        comboBox1.setCurrentText(config_js['current_playlist_category']) # 设置下拉列表1的初始状态
+        self.comboBox2.setCurrentText(os.path.basename(config_js['music_folder_path'])) # 设置下拉列表2的初始状态
+        
+        central_widget_layout = Layout.create(
+            name="QVBoxLayout", parent=self.central_widget, 
+            children=[label1, comboBox1, label2, self.comboBox2])
+ 
+
+
+
+        # 将中心组件设置为滚动内容
+        self.setWidget(self.central_widget)
+
+
+    def comboBoxIndexChanged1(self, index) -> None:
+        """处理下拉列表选择变化事件1"""
+        combo_box = self.central_widget.sender()  # 获取发射信号的对象
+        selected_item = combo_box.currentText()# 获取选定选项的文本内容
+        config_js['current_playlist_category'] = selected_item
+        for fst_item_name in self.fst_items_name:
+            if fst_item_name == selected_item:
+                self.comboBox2.clear()
+                sec_items = [sub_folder[0] for sub_folder in config_js['music_folders_path'][self.fst_items_name.index(fst_item_name)][1:]]
+                self.comboBox2.addItems(sec_items)
+    
+    def comboBoxIndexChanged2(self, index) -> None:
+        """ 处理下拉列表选择变化事件2 """
+        combo_box = self.central_widget.sender()  # 获取发射信号的对象
+        selected_item = combo_box.currentText()# 获取选定选项的文本内容
+        # 获取当前歌单组在music_folders_path歌单结构中的索引
+        for fst_item_name in self.fst_items_name:
+            if fst_item_name == config_js['current_playlist_category']:
+                fst_index = self.fst_items_name.index(fst_item_name)
+        # 逐个获取当前歌单组下的歌单的路径
+        for sec_item_path in [sub_folder[1] for sub_folder in config_js['music_folders_path'][fst_index][1:]]:
+            # 找到下拉列表所选择的歌单名称, 将其对应的路径赋给app属性
+            if os.path.basename(sec_item_path) == selected_item:
+                self.app.music_folder_path = sec_item_path
+                self.app.update_song_list()
+        
+    def eventFilter(self, obj, event):
+        """事件过滤器"""
+        if isinstance(obj, QComboBox) and event.type() == QEvent.Wheel:
+            # 捕获滚轮事件并忽略
+            return True
+        # 其他事件正常继承
+        return super().eventFilter(obj, event)
+        
 class PageImageSetting(QScrollArea):
     """ 背景图片/图标设置页面 """
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -305,8 +387,7 @@ class PageShortcutSetting(QScrollArea):
         self.checkbox.setStyleSheet("font-weight: bold; ")
         self.checkbox.stateChanged.connect(self.checkboxStateChanged)
         self.checkbox.setFocusPolicy(Qt.NoFocus)# 禁用键盘焦点
-        if config_js['use_custom_shortcut_keys']:
-            self.checkbox.setChecked(True)
+        
 
         self.label14 = Label.create(
             parent=self.widget2, text="播放下一首", Alignment=Qt.AlignVCenter,
@@ -360,8 +441,12 @@ class PageShortcutSetting(QScrollArea):
         widget2_layout = Layout.create(
             name='QVBoxLayout', parent=self.widget2, children=[self.checkbox, self.line10, layout7, line6, layout8, line7, layout9, line8, 
             layout10, line9, layout11])
-
-
+        
+        # 设置复选框的初始状态
+        if config_js['use_custom_shortcut_keys']:
+            self.checkbox.setChecked(True)
+        else:
+            self.customShortcutOptionalNeutrals()   
         # 将中心组件设置为滚动内容
         self.setWidget(central_widget)
 
@@ -422,8 +507,39 @@ class PageShortcutSetting(QScrollArea):
             # 切换方案序号保存到配置文件
             config_js['key_press_programme'] = '0'
             config_js['use_custom_shortcut_keys'] = True
+            self.customShortcutOptionalNeutrals(True) # 可选中
         else:
             config_js['use_custom_shortcut_keys'] = False
+            self.customShortcutOptionalNeutrals() # 不可选中
+    
+    def customShortcutOptionalNeutrals(self, isOptional = False) -> None:
+        """自定义快捷键界面组件的可选中性"""
+        true_style = "font-size: 30px; color: #000000; min-height: 55px;"
+        false_style = "font-size: 30px; color: gray; min-height: 55px;"
+        # 可选中时的属性
+        if isOptional:
+            self.label14.setStyleSheet(true_style)
+            self.label15.setStyleSheet(true_style)
+            self.label16.setStyleSheet(true_style)
+            self.label17.setStyleSheet(true_style)
+            self.label18.setStyleSheet(true_style)
+            for shortcutEditer in self.shortcutEditer_group:
+                shortcutEditer.setFocusPolicy(Qt.ClickFocus)
+                shortcutEditer.installEventFilter(shortcutEditer) # 恢复事件过滤器
+                shortcutEditer.setStyleSheet(""" QWidget{ min-height: 50px;background-color: white; font-size: 36px; color: black; }""")
+        # 不可选中时的属性
+        else:
+            self.label14.setStyleSheet(false_style)
+            self.label15.setStyleSheet(false_style)
+            self.label16.setStyleSheet(false_style)
+            self.label17.setStyleSheet(false_style)
+            self.label18.setStyleSheet(false_style)
+            for shortcutEditer in self.shortcutEditer_group:
+                shortcutEditer.setFocusPolicy(Qt.NoFocus)
+                shortcutEditer.removeEventFilter(shortcutEditer) # 清除事件过滤器
+                shortcutEditer.setStyleSheet("""QWidget{ min-height: 50px; background-color: white; font-size: 36px; color: gray; }""")
+                
+
 
     def mousePressEvent(self, event):
         """鼠标点击事件"""
@@ -542,7 +658,7 @@ class PageConfigFiles(QScrollArea):
             # 使用系统默认程序打开文件
             os.startfile(file_path)
         except FileNotFoundError:
-            QMessageBox.critical(self.main_window, 'FileNotFoundError', '文件不存在,请检查文件位置', QMessageBox.Ok)
+            QMessageBox.critical(self, 'FileNotFoundError', '文件不存在,请检查文件位置', QMessageBox.Ok)
     
 
 if __name__ == '__main__':

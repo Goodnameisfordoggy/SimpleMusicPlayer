@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-26 22:01:28
+LastEditTime: 2024-03-04 22:36:41
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingUI.py
 Description: 
 
@@ -59,7 +59,7 @@ class SettingUI(QMainWindow):
         # 应用程序对象传入
         self.app = app
         # UI设置
-        self.setWindowTitle("SettingUI")
+        self.setWindowTitle("Setting . . .")
         self.resize(width, height)
         # 底层变量
         self.menu_setting = None  # 一级菜单对象
@@ -130,7 +130,7 @@ class SettingUI(QMainWindow):
         self.button_group[0].setStyleSheet(checked_button_style)
 
         # 右侧堆叠子页
-        page_SongList = PageSongList(self)
+        page_SongList = PageSongList(self, self.app)
         self.right_layout.addWidget(page_SongList)
         page_ImageSetting = PageImageSetting(self)
         self.right_layout.addWidget(page_ImageSetting)

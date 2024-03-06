@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-26 21:44:53
+LastEditTime: 2024-03-05 23:14:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -28,7 +28,6 @@ from IsOverMonitor import IsOverMonitor
 from KeyboardListener import KeyboardListener
 from DataProtector import DataProtector
 from SettingUI import SettingUI
-from SongListMenu import ChangeFolderMenu
 from DataProtector import config_js, style_js, style_css
 
 
@@ -322,8 +321,6 @@ class ApplicationWindow(QMainWindow):
 
         # 一级菜单创建操作
         menu_setting = SettingUI(app=self)
-
-        menu_chang_folder_path = ChangeFolderMenu(self)
 
     # 窗口跟随鼠标移动(单击拖动窗口)
     def mousePressEvent(self, event) -> None:
