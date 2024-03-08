@@ -17,7 +17,9 @@ class PageSongList(QScrollArea):
             self.setStyleSheet("QScrollArea { border: transparent; }")
             self.setWidgetResizable(True) # 组件可调整大小属性
             self.fst_items_name = [sublist[0] for sublist in config_js['music_folders_path']]
+            self.selected_subitem = None
             self.construct()
+
 
     def construct(self) -> None:
         """ 页面UI搭建 """
@@ -74,19 +76,66 @@ class PageSongList(QScrollArea):
             children=[label1, comboBox1, label2, self.comboBox2])
         
         # widget2布局
+        button1 = PushButton.create(parent=widget2, text="移动到其他歌单")
+        button2 = PushButton.create(parent=widget2, text="复制到其他歌单")
+        button3 = PushButton.create(parent=widget2, text="从当前歌单移除", clicked_callback=self.removed_from_the_current_playlist)
+
+        layout1 = Layout.create(name='QHBoxLayout', children=[button1, button2, button3])
+
         self.listWidget = QListWidget(widget2)
         self.listWidget.setStyleSheet(" QListWidget { min-height: 350px; border: none; } ")
         self.listWidget.addItems(self.get_all_audio_files_in_folder(config_js['music_folder_path']))
+        self.listWidget.itemClicked.connect(self.on_item_clicked)
 
-        widget2_layout = Layout.create(
-            name="QVBoxLayout", parent=widget2, 
-            children=[self.listWidget])
+        widget2_layout = Layout.create(name="QVBoxLayout", parent=widget2, children=[layout1, self.listWidget])
 
         # 将中心组件设置为滚动内容
         self.setWidget(self.central_widget)
+
+    def on_item_clicked(self, item):
+        file_name = item.text()
+        self.selected_subitem = os.path.join(config_js['music_folder_path'], file_name) # 获取选中子项对应文件的绝对路径
     
+    def move_to_other_playlist(self) -> None:
+        pass
+    def copy_to_other_playlist(self) -> None:
+        pass
+    def removed_from_the_current_playlist(self) ->None:
+        """从当前文件夹删除目标文件, 并添加到"最近删除"目录"""
+        if self.selected_subitem:
+            song_library_path = os.path.dirname(config_js['music_folder_path']) # 获取曲库路径
+            recently_deleted_directory_path = os.path.join(song_library_path, "最近删除") # "最近删除"目录路径
+            object_file_name = os.path.basename(self.selected_subitem) # 目标文件名
+
+            # 检测曲库中是否有"最近删除"目录, 如果不存在，则创建"最近删除"目录
+            if not os.path.exists(recently_deleted_directory_path):
+                os.makedirs(recently_deleted_directory_path)
+            else:
+                # 检测选中的子项对应的文件是否存在
+                if os.path.exists(self.selected_subitem):
+                    with open(self.selected_subitem, 'rb') as file:
+                        content = file.read()
+                    # 将要删除的文件添加到"最近删除"目录
+                    with open(os.path.join(recently_deleted_directory_path, object_file_name), 'wb') as file:
+                        file.write(content)
+                    # 删除文件
+                    os.remove(self.selected_subitem)
+                    # 查找包含目标文件名的项
+                    items_to_delete = self.listWidget.findItems(object_file_name, Qt.MatchExactly)
+                    # 如果找到匹配的项，删除第一个匹配项
+                    if items_to_delete:
+                        item = items_to_delete[0]
+                        row = self.listWidget.row(item)
+                        self.listWidget.takeItem(row)
+                    # 将选中状态置空
+                    self.selected_subitem = None
+                else:
+                    QMessageBox.critical(self, 'FileNotFoundError', '文件不存在!', QMessageBox.Ok)
+        else:
+            QMessageBox.warning(self, 'warning', '未选中文件!', QMessageBox.Ok)
+
     def get_all_audio_files_in_folder(self, folder_path: str) -> list:
-        """获取所选文件夹下的全部音频文件"""
+        """获取所选文件夹下的全部音频文件名称"""
         audio_files = []
         audio_extensions = ['.mp3', '.wav', '.ogg', '.flac'] # 音频文件常见扩展名
 
@@ -95,7 +144,7 @@ class PageSongList(QScrollArea):
             if os.path.isfile(file_path): # 判断file_path指向的是否为文件
                 base_name, file_extension = os.path.splitext(file_name) # 分离文件名基本部分与拓展名
                 if file_extension.lower() in audio_extensions: # 检查文件的小写拓展名是否符合要求
-                    audio_files.append(base_name)
+                    audio_files.append(file_name)
 
         return audio_files
 
