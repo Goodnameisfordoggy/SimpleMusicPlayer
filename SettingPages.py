@@ -3,7 +3,7 @@ import sys
 import time
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, 
-QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel)
+QMessageBox, QSpacerItem, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel, QListWidget)
 from PyQt5.QtGui import QPixmap
 from Simple_Qt import Label, PushButton, Layout
 from DataProtector import config_js
@@ -24,12 +24,23 @@ class PageSongList(QScrollArea):
         # 主布局
         # 中心组件
         self.central_widget = QGroupBox(None, self)
-        self.central_widget.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
+        self.central_widget.setStyleSheet("QGroupBox { border: none; }")
         self.central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
         
         main_layout = Layout.create(name="QVBoxLayout", parent=self, children=[self.central_widget])
 
         # 中心组件布局
+        widget1 = QGroupBox(self.central_widget)
+        widget1.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
+        
+        widget2 = QGroupBox(self.central_widget)
+        widget2.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
+
+        central_widget_layout = Layout.create(
+            name="QVBoxLayout", parent=self.central_widget, 
+            children=[widget1, widget2])
+        
+        # widget1布局
         label1 = Label.create(
             parent=self.central_widget, text="歌单分组", 
             StyleSheet=
@@ -58,15 +69,35 @@ class PageSongList(QScrollArea):
         comboBox1.setCurrentText(config_js['current_playlist_category']) # 设置下拉列表1的初始状态
         self.comboBox2.setCurrentText(os.path.basename(config_js['music_folder_path'])) # 设置下拉列表2的初始状态
         
-        central_widget_layout = Layout.create(
-            name="QVBoxLayout", parent=self.central_widget, 
+        widget1_layout = Layout.create(
+            name="QVBoxLayout", parent=widget1, 
             children=[label1, comboBox1, label2, self.comboBox2])
- 
+        
+        # widget2布局
+        self.listWidget = QListWidget(widget2)
+        self.listWidget.setStyleSheet(" QListWidget { min-height: 350px; border: none; } ")
+        self.listWidget.addItems(self.get_all_audio_files_in_folder(config_js['music_folder_path']))
 
-
+        widget2_layout = Layout.create(
+            name="QVBoxLayout", parent=widget2, 
+            children=[self.listWidget])
 
         # 将中心组件设置为滚动内容
         self.setWidget(self.central_widget)
+    
+    def get_all_audio_files_in_folder(self, folder_path: str) -> list:
+        """获取所选文件夹下的全部音频文件"""
+        audio_files = []
+        audio_extensions = ['.mp3', '.wav', '.ogg', '.flac'] # 音频文件常见扩展名
+
+        for file_name in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, file_name)
+            if os.path.isfile(file_path): # 判断file_path指向的是否为文件
+                base_name, file_extension = os.path.splitext(file_name) # 分离文件名基本部分与拓展名
+                if file_extension.lower() in audio_extensions: # 检查文件的小写拓展名是否符合要求
+                    audio_files.append(base_name)
+
+        return audio_files
 
 
     def comboBoxIndexChanged1(self, index) -> None:
@@ -94,6 +125,9 @@ class PageSongList(QScrollArea):
             if os.path.basename(sec_item_path) == selected_item:
                 self.app.music_folder_path = sec_item_path
                 self.app.update_song_list()
+                if hasattr(self, 'listWidget'):
+                    self.listWidget.clear()
+                    self.listWidget.addItems(self.get_all_audio_files_in_folder(sec_item_path))
         
     def eventFilter(self, obj, event):
         """事件过滤器"""
@@ -258,6 +292,7 @@ class PageShortcutSetting(QScrollArea):
             '4': ['Ctrl+6', 'Ctrl+4', 'Ctrl+5', 'Ctrl+1', 'Ctrl+0']
         }
         self.shortcutEditer_group = []
+        self.widget2_optional_neutral = None
 
         self.construct()
         
@@ -518,6 +553,7 @@ class PageShortcutSetting(QScrollArea):
         false_style = "font-size: 30px; color: gray; min-height: 55px;"
         # 可选中时的属性
         if isOptional:
+            self.widget2_optional_neutral = True
             self.label14.setStyleSheet(true_style)
             self.label15.setStyleSheet(true_style)
             self.label16.setStyleSheet(true_style)
@@ -529,6 +565,7 @@ class PageShortcutSetting(QScrollArea):
                 shortcutEditer.setStyleSheet(""" QWidget{ min-height: 50px;background-color: white; font-size: 36px; color: black; }""")
         # 不可选中时的属性
         else:
+            self.widget2_optional_neutral = False
             self.label14.setStyleSheet(false_style)
             self.label15.setStyleSheet(false_style)
             self.label16.setStyleSheet(false_style)
@@ -543,20 +580,21 @@ class PageShortcutSetting(QScrollArea):
 
     def mousePressEvent(self, event):
         """鼠标点击事件"""
-        # 获取鼠标事件的位置
-        pos = event.pos()
-        # 找到该位置的子部件
-        child_widget = self.childAt(pos)
-        # 检查列表
-        check_list = []
-        # 当点击父组件的非shortcutEditer部分时，也还原其样式为默认样式
-        for shortcutEditer in self.shortcutEditer_group:
-            children = shortcutEditer.findChildren(QLabel)
-            check_list.extend(children)
-        # 鼠标点击发生在shortcutEditer组件范围之外,恢复其样式为默认样式
-        if child_widget not in self.shortcutEditer_group and child_widget not in check_list:
+        if self.widget2_optional_neutral:
+            # 获取鼠标事件的位置
+            pos = event.pos()
+            # 找到该位置的子部件
+            child_widget = self.childAt(pos)
+            # 检查列表
+            check_list = []
+            # 当点击父组件的非shortcutEditer部分时，也还原其样式为默认样式
             for shortcutEditer in self.shortcutEditer_group:
-                shortcutEditer.setStyleSheet(DEFAULT_STYLE)
+                children = shortcutEditer.findChildren(QLabel)
+                check_list.extend(children)
+            # 鼠标点击发生在shortcutEditer组件范围之外,恢复其样式为默认样式
+            if child_widget not in self.shortcutEditer_group and child_widget not in check_list:
+                for shortcutEditer in self.shortcutEditer_group:
+                    shortcutEditer.setStyleSheet(DEFAULT_STYLE)
                 
 
 class PageConfigFiles(QScrollArea):
