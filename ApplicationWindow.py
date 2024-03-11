@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-05 23:14:34
+LastEditTime: 2024-03-11 18:53:41
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -13,7 +13,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) ${2024} by ${HDJ}, All Rights Reserved. 
+Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import glob
 import os
@@ -80,9 +80,12 @@ class ApplicationWindow(QMainWindow):
         # 导入音乐文件夹
         music_file_path = self.music_folder_path
         # 获取全部mp3文件的路径列表
-        mp3_files_list = glob.glob(os.path.join(music_file_path, '*.mp3'))
+        music_files_list = glob.glob(os.path.join(music_file_path, '*.mp3')) + \
+            glob.glob(os.path.join(music_file_path, '*.wav')) + \
+            glob.glob(os.path.join(music_file_path, '*.ogg')) + \
+            glob.glob(os.path.join(music_file_path, '*.flac'))
         # 创建播放字典
-        for music_number, music_path in enumerate(mp3_files_list, start=1):
+        for music_number, music_path in enumerate(music_files_list, start=1):
             self.play_dict[f'{music_number}'] = f'{music_path}'
 
     def play_song(self, music_position=0) -> None:
@@ -93,8 +96,7 @@ class ApplicationWindow(QMainWindow):
         """
         try:
             # 加载音乐文件
-            music_file_path = self.play_dict.get(
-                f'{self.current_music_number}')
+            music_file_path = self.play_dict.get(f'{self.current_music_number}')
         except TypeError:
             QMessageBox.critical(self, '温馨提示', '切换文件夹后,请在查找界面选择歌曲或点击随机播放.')
         else:
@@ -117,8 +119,8 @@ class ApplicationWindow(QMainWindow):
         """ 用于更改"当前播放歌曲"标签显示内容的操作 """
         music_file_path = self.play_dict.get(f'{self.current_music_number}')
         music_file_name = os.path.basename(music_file_path)
-        self.label_current_play_content.setText(
-            music_file_name.replace('.mp3', ''))
+        base_name, file_extension = os.path.splitext(music_file_name)
+        self.label_current_play_content.setText(base_name)
 
     def random_play(self) -> None:
         """ 随机播放(按钮绑定操作) """
@@ -139,8 +141,7 @@ class ApplicationWindow(QMainWindow):
         else:
             self.player.pause()
             if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
-                self.current_music_number = int(
-                    self.current_music_number.replace('*', ''))
+                self.current_music_number = int(self.current_music_number.replace('*', ''))
             self.current_music_number -= 1
             if self.current_music_number == 0:
                 self.current_music_number = len(self.play_dict)
@@ -155,8 +156,7 @@ class ApplicationWindow(QMainWindow):
         else:
             self.player.pause()
             if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
-                self.current_music_number = int(
-                    self.current_music_number.replace('*', ''))
+                self.current_music_number = int(self.current_music_number.replace('*', ''))
             self.current_music_number += 1
             if self.current_music_number > len(self.play_dict):
                 self.current_music_number = 1
@@ -175,8 +175,7 @@ class ApplicationWindow(QMainWindow):
 
         # 开始路径2:之前有播放内容被暂停,点击按钮继续播放
         elif isinstance(self.current_music_number, str):  # QwQ:通过类型的转化来区分路径
-            self.current_music_number = int(
-                self.current_music_number.replace('*', ''))
+            self.current_music_number = int(self.current_music_number.replace('*', ''))
             self.play_song(self.current_position)
             self.current_position = 0.0
             # 按钮文本显示为"暂停"
@@ -208,8 +207,7 @@ class ApplicationWindow(QMainWindow):
 
     def confirm_to_quit(self) -> None:
         """ 确认退出(按钮绑定操作) """
-        reply = QMessageBox.question(
-            self, '温馨提示', '记得给 作者:HDJ 一颗小星星', QMessageBox.Yes | QMessageBox.No)
+        reply = QMessageBox.question(self, '温馨提示', '记得给 作者:HDJ 一颗小星星', QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.close()  # 使用close方法来关闭窗口
 

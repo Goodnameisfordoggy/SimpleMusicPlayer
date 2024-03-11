@@ -1,3 +1,20 @@
+'''
+Author: HDJ
+StartDate: please fill in
+LastEditTime: 2024-03-11 18:46:33
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingPages.py
+Description: 
+
+				*		写字楼里写字间，写字间里程序员；
+				*		程序人员写程序，又拿程序换酒钱。
+				*		酒醒只在网上坐，酒醉还来网下眠；
+				*		酒醉酒醒日复日，网上网下年复年。
+				*		但愿老死电脑间，不愿鞠躬老板前；
+				*		奔驰宝马贵者趣，公交自行程序员。
+				*		别人笑我忒疯癫，我笑自己命太贱；
+				*		不见满街漂亮妹，哪个归得程序员？    
+Copyright (c) 2024 by HDJ, All Rights Reserved. 
+'''
 import os
 import sys
 import time
@@ -16,7 +33,8 @@ class PageSongList(QScrollArea):
             self.app = app
             self.setStyleSheet("QScrollArea { border: transparent; }")
             self.setWidgetResizable(True) # 组件可调整大小属性
-            self.fst_items_name = [sublist[0] for sublist in config_js['music_folders_path']]
+            self.fst_items_name = [sub_list[0] for sub_list in config_js['music_folders_path'] if isinstance(sub_list[0], str)]
+            self.current_sec_items_name = []
             self.selected_subitem_AP = None
             self.construct()
 
@@ -59,21 +77,25 @@ class PageSongList(QScrollArea):
             """
         )
 
-        comboBox1 = QComboBox()
-        comboBox1.addItems(self.fst_items_name)
-        comboBox1.currentIndexChanged.connect(self.comboBoxIndexChanged1)
-        comboBox1.installEventFilter(self)
-        
+        self.comboBox1 = QComboBox()
+        self.comboBox1.addItems(self.fst_items_name)
+        self.comboBox1.currentIndexChanged.connect(self.comboBoxIndexChanged1)
+        self.comboBox1.installEventFilter(self)
+
         self.comboBox2 = QComboBox()
+        for fst_items in config_js['music_folders_path']:
+            if fst_items[0] == config_js['current_playlist_category']:
+                self.current_sec_items_name = [sub_list[0] for sub_list in fst_items if isinstance(sub_list, list)]
+        self.comboBox2.addItems(self.current_sec_items_name)
         self.comboBox2.currentIndexChanged.connect(self.comboBoxIndexChanged2)
         self.comboBox2.installEventFilter(self)
         
-        comboBox1.setCurrentText(config_js['current_playlist_category']) # 设置下拉列表1的初始状态
+        self.comboBox1.setCurrentText(config_js['current_playlist_category']) # 设置下拉列表1的初始状态
         self.comboBox2.setCurrentText(os.path.basename(config_js['music_folder_path'])) # 设置下拉列表2的初始状态
         
         widget1_layout = Layout.create(
             name="QVBoxLayout", parent=widget1, 
-            children=[label1, comboBox1, label2, self.comboBox2])
+            children=[label1, self.comboBox1, label2, self.comboBox2])
         
         # widget2布局
         button1 = PushButton.create(
@@ -233,13 +255,12 @@ class PageSongList(QScrollArea):
     def get_all_audio_files_in_folder(self, folder_path: str) -> list:
         """获取所选文件夹下的全部音频文件名称"""
         audio_files = []
-        audio_extensions = ['.mp3', '.wav', '.ogg', '.flac'] # 音频文件常见扩展名
 
         for file_name in os.listdir(folder_path):
             file_path = os.path.join(folder_path, file_name)
             if os.path.isfile(file_path): # 判断file_path指向的是否为文件
                 base_name, file_extension = os.path.splitext(file_name) # 分离文件名基本部分与拓展名
-                if file_extension.lower() in audio_extensions: # 检查文件的小写拓展名是否符合要求
+                if file_extension.lower() in config_js['audio_file_suffix']: # 检查文件的小写拓展名是否符合要求
                     audio_files.append(file_name)
 
         return audio_files
@@ -251,8 +272,10 @@ class PageSongList(QScrollArea):
         selected_item = combo_box.currentText()# 获取选定选项的文本内容
         config_js['current_playlist_category'] = selected_item
         for fst_item_name in self.fst_items_name:
+            # 在歌单分组名中查找选中项文本
             if fst_item_name == selected_item:
                 self.comboBox2.clear()
+                # 根据匹配的歌单分组名在歌单分组名列表中的索引,获取该歌单分组下的全部歌单名称
                 sec_items = [sub_folder[0] for sub_folder in config_js['music_folders_path'][self.fst_items_name.index(fst_item_name)][1:]]
                 self.comboBox2.addItems(sec_items)
     
@@ -550,8 +573,8 @@ class PageShortcutSetting(QScrollArea):
             self.showKeyPressProgramme()
 
         # widget2布局
-        for i in range(5):
-            action_list =['next_play', 'previous_play', 'music_pause', 'random_play', 'single_cycle_play']
+        action_list =['next_play', 'previous_play', 'music_pause', 'random_play', 'single_cycle_play']
+        for i in range(len(action_list)):
             Editer = ShortcutEditer(
                 f'Editer{i + 1}', 
                 text= config_js['custom_shortcut_keys'][action_list[i]],

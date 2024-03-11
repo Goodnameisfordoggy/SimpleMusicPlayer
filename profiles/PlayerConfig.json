@@ -101,12 +101,12 @@
     "SearchUIIcon": "D:/LocalUsers/Goodnameisfordoggy-Gitee/a-simple-MusicPlayer/phbimage/Beauty With Headset.png",
     "#2": "运行数据,严禁更改!",
     "music_folder_path": "F:\\歌曲\\自定义歌单\\❤️",
-    "current_music_number": "*5*",
-    "file_total_time": 174,
+    "current_music_number": "*2*",
+    "file_total_time": 336,
     "current_position": 0.0,
     "need_cycle": false,
     "key_press_programme": "0",
-    "current_music_name": "喀秋莎(Live)--Варвара",
+    "current_music_name": "Ensemble",
     "use_custom_shortcut_keys": false,
     "custom_shortcut_keys": {
         "next_play": "Space",
@@ -116,6 +116,12 @@
         "single_cycle_play": "Ctrl+Q"
     },
     "current_playlist_category": "自定义歌单",
+    "audio_file_suffix": [
+        ".mp3",
+        ".wav",
+        ".ogg",
+        ".flac"
+    ],
     "play_dict": {
         "1": "F:\\歌曲\\自定义歌单\\❤️\\Eminem Vs Psy - Without Style--Eminem Vs Psy.mp3",
         "2": "F:\\歌曲\\自定义歌单\\❤️\\Ensemble.mp3",
@@ -123,11 +129,11 @@
         "4": "F:\\歌曲\\自定义歌单\\❤️\\Once Upon a Time.mp3",
         "5": "F:\\歌曲\\自定义歌单\\❤️\\喀秋莎(Live)--Варвара.mp3",
         "6": "F:\\歌曲\\自定义歌单\\❤️\\本草纲目--周杰伦.mp3",
-        "7": "F:\\歌曲\\自定义歌单\\❤️\\椿.mp3",
-        "8": "F:\\歌曲\\自定义歌单\\❤️\\洛希极限.mp3",
-        "9": "F:\\歌曲\\自定义歌单\\❤️\\爱在西元前--周杰伦.mp3",
-        "10": "F:\\歌曲\\自定义歌单\\❤️\\祖海 - 好运来.mp3",
-        "11": "F:\\歌曲\\自定义歌单\\❤️\\谁家.mp3",
-        "12": "F:\\歌曲\\自定义歌单\\❤️\\阿炳 - 二泉映月 (高韶青二胡独奏).mp3"
+        "7": "F:\\歌曲\\自定义歌单\\❤️\\洛希极限.mp3",
+        "8": "F:\\歌曲\\自定义歌单\\❤️\\爱在西元前--周杰伦.mp3",
+        "9": "F:\\歌曲\\自定义歌单\\❤️\\祖海 - 好运来.mp3",
+        "10": "F:\\歌曲\\自定义歌单\\❤️\\谁家.mp3",
+        "11": "F:\\歌曲\\自定义歌单\\❤️\\阿炳 - 二泉映月 (高韶青二胡独奏).mp3",
+        "12": "F:\\歌曲\\自定义歌单\\❤️\\Love Story--Taylor Swift.flac"
     }
 }

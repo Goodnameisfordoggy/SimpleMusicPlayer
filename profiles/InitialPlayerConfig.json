@@ -32,5 +32,12 @@
         "random_play": "按下快捷键",
         "single_cycle_play": "按下快捷键"
     },
+    "current_playlist_category": "",
+    "audio_file_suffix": [
+        ".mp3",
+        ".wav",
+        ".ogg",
+        ".flac"
+    ],
     "play_dict": {}
 }
