@@ -18,6 +18,7 @@
 
     "#2": "以下参数严禁更改!",
     "music_folder_path": "",
+    "foregoing_songlist": "",
     "current_music_number": "*0*",
     "file_total_time": 0,
     "current_position": 0.0,

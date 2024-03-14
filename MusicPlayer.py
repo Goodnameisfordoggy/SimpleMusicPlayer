@@ -3,7 +3,6 @@ Author: HDJ
 StartDate: 2023-6-14 00:00:00
 LastEditTime: 2024-02-08 22:35:47
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\MusicPlayer.py
-version: 2.9.13
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；

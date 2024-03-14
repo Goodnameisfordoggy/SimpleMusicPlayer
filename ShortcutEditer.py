@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-02-09 16:22:19
+LastEditTime: 2024-03-13 22:12:18
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ShortcutEditer.py
 Description: 
 
@@ -16,10 +16,9 @@ Description:
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
 import sys
-import json
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout
 from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtGui import QKeySequence, QPainter, QBrush, QColor
+from PyQt5.QtGui import QKeySequence
 from DataProtector import config_js
 
 DEFAULT_STYLE = """

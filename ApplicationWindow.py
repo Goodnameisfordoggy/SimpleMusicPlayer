@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-11 18:53:41
+LastEditTime: 2024-03-14 23:25:30
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -13,7 +13,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) 2024 by HDJ, All Rights Reserved. 
+Copyright (c) ${2024} by ${HDJ}, All Rights Reserved. 
 '''
 import glob
 import os
@@ -44,7 +44,8 @@ class ApplicationWindow(QMainWindow):
         self.setWindowTitle("Music Player")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
         self.setWindowIcon(QIcon(config_js['ApplicationWindowIcon']))
-        PackingModificationMethod.set_background_image(self, config_js['ApplicationWindowBackGround'])
+        PackingModificationMethod.set_background_image(
+            self, config_js['ApplicationWindowBackGround'])
         PackingModificationMethod.set_desktop_center(self)
         # 一级UI界面的层次设置, False置于最底部, True置顶
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
@@ -80,12 +81,9 @@ class ApplicationWindow(QMainWindow):
         # 导入音乐文件夹
         music_file_path = self.music_folder_path
         # 获取全部mp3文件的路径列表
-        music_files_list = glob.glob(os.path.join(music_file_path, '*.mp3')) + \
-            glob.glob(os.path.join(music_file_path, '*.wav')) + \
-            glob.glob(os.path.join(music_file_path, '*.ogg')) + \
-            glob.glob(os.path.join(music_file_path, '*.flac'))
+        mp3_files_list = glob.glob(os.path.join(music_file_path, '*.mp3'))
         # 创建播放字典
-        for music_number, music_path in enumerate(music_files_list, start=1):
+        for music_number, music_path in enumerate(mp3_files_list, start=1):
             self.play_dict[f'{music_number}'] = f'{music_path}'
 
     def play_song(self, music_position=0) -> None:
@@ -114,21 +112,22 @@ class ApplicationWindow(QMainWindow):
             self.player.play()
             # 更改当前正在播放标签的文本
             self.change_label_current_play_content()
+            # 记录播放歌曲所属的歌单
+            config_js['foregoing_songlist'] = os.path.dirname(
+                self.play_dict.get(f'{self.current_music_number}'.replace('*', '')))
 
     def change_label_current_play_content(self) -> None:
         """ 用于更改"当前播放歌曲"标签显示内容的操作 """
         music_file_path = self.play_dict.get(f'{self.current_music_number}')
         music_file_name = os.path.basename(music_file_path)
-        base_name, file_extension = os.path.splitext(music_file_name)
-        self.label_current_play_content.setText(base_name)
+        self.label_current_play_content.setText(music_file_name.replace('.mp3', ''))
 
     def random_play(self) -> None:
         """ 随机播放(按钮绑定操作) """
         if self.current_music_number is not None:
             self.player.pause()
         if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
-            self.current_music_number = int(
-                self.current_music_number.replace('*', ''))
+            self.current_music_number = int(self.current_music_number.replace('*', ''))
         self.current_music_number = random.randint(1, len(self.play_dict))
         self.play_song()
         # 按钮文本显示为"暂停"
@@ -136,7 +135,7 @@ class ApplicationWindow(QMainWindow):
 
     def previous_play(self) -> None:
         """ 上一首(按钮绑定操作) """
-        if self.current_music_number is None:
+        if not self.current_music_number:
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
             self.player.pause()
@@ -151,7 +150,7 @@ class ApplicationWindow(QMainWindow):
 
     def next_play(self) -> None:
         """ 下一首(按钮绑定操作) """
-        if self.current_music_number is None:
+        if not self.current_music_number:
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
             self.player.pause()
@@ -168,16 +167,24 @@ class ApplicationWindow(QMainWindow):
         """ 暂停||开始(按钮绑定操作) """
 
         # 开始路径1:如果之前无播放内容,则随机播放  QwQ:克服选择困难症
-        if self.current_music_number is None:
+        if not self.current_music_number:
             self.random_play()
             # 按钮文本显示为"暂停"
             self.button_pause_or_begin.setText('暂停')
 
         # 开始路径2:之前有播放内容被暂停,点击按钮继续播放
         elif isinstance(self.current_music_number, str):  # QwQ:通过类型的转化来区分路径
-            self.current_music_number = int(self.current_music_number.replace('*', ''))
-            self.play_song(self.current_position)
-            self.current_position = 0.0
+            #对比暂停前的歌单与当前歌单是否一致，来决定是否初始化播放序号与位置
+            if config_js['foregoing_songlist'] != config_js['music_folder_path']:
+                # 此路径下,切换歌单后继续播放,则从歌单的第一首的0秒开始播放
+                self.current_music_number = 1
+                self.current_position = 0.0
+                self.play_song(self.current_position)
+            else:
+                # 未切换歌单, 从上次位置继续播放
+                self.current_music_number = int(self.current_music_number.replace('*', ''))
+                self.play_song(self.current_position)
+                self.current_position = 0.0
             # 按钮文本显示为"暂停"
             self.button_pause_or_begin.setText('暂停')
 
@@ -192,7 +199,7 @@ class ApplicationWindow(QMainWindow):
 
     def single_cycle_play(self) -> None:
         """ 单曲循环(按钮绑定操作) """
-        if self.current_music_number is None:
+        if not self.current_music_number:
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
             # 点击开始循环
@@ -346,7 +353,7 @@ class ApplicationWindow(QMainWindow):
         # 鼠标释放时清空起始位置
         if hasattr(self, 'drag_start_position'):
             delattr(self, 'drag_start_position')
-    
+
     def closeEvent(self, event) -> None:
         """ 一级UI窗口关闭事件 """
         # 调用父类的 closeEvent 方法，确保原有的行为能够正常执行

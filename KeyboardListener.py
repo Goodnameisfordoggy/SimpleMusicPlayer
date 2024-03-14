@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-09 16:55:56
+LastEditTime: 2024-03-13 22:11:15
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\KeyboardListener.py
 Description: 
 
@@ -17,10 +17,7 @@ Copyright (c) 2024 by HDJ, All Rights Reserved.
 '''
 import pynput.keyboard
 import keyboard
-from PyQt5.QtWidgets import QShortcut
-from PyQt5.QtGui import QKeySequence
-from Simple_Qt import Menu, Action
-from DataProtector import style_css, config_js
+from DataProtector import config_js
 
 
 class KeyboardListener(object):
