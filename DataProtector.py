@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-14 22:36:48
+LastEditTime: 2024-03-18 23:36:36
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\DataProtector.py
 Description: 
 
@@ -59,10 +59,7 @@ class DataProtector(object):
             config_js['current_position'] = self.main_window.player.time
             config_js['need_cycle'] = self.main_window.need_cycle
             config_js['play_dict'] = self.main_window.play_dict
-            config_js['current_music_name'] = os.path.basename(
-                self.main_window.play_dict.get(
-                    f'{self.main_window.current_music_number}'.replace('*', ''))
-            ).replace('.mp3', '')
+            config_js['current_music_name'] = self.main_window.current_music_name
             
         except AttributeError:
             # 忽略部分属性不存在时带来的报错

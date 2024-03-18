@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-26 22:05:30
+LastEditTime: 2024-03-18 23:24:37
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SearchUI.py
 Description: 
 
@@ -75,25 +75,39 @@ class SearchUI(QDialog):
             num = 0
             for key, value in self.main_window.play_dict.items():  # 在循环中处理键和值,items()方法将返回 包含字典中的键值对的 可迭代对象
                 # 判断用户输入内容与音乐文件名是否有重叠
-                if input_song_name in os.path.basename(value):
+                filename = os.path.basename(value)
+                if input_song_name in filename:
                     num += 1
                     # 用正则表达式来提取歌手的名字
+                    pattern = r"(.+?)--(.+?)(" + "|".join(re.escape(suffix) for suffix in config_js['audio_file_suffix']) + ")$" # 将配置文件中的所有后缀转译,拼接,添加到末尾
+                    result = re.search(pattern, filename)
                     singer_name = "暂无"
-                    pattern = r"--(.+?)\.mp3"
-                    result = re.search(pattern, os.path.basename(value))
                     if result:
-                        singer_name = result.group().replace("--", '').replace(".mp3", '')
+                        # 在文件名中找到最后一个 '--' 分隔符的索引
+                        last_separator_index = filename.rfind("--")
+                        # 获取歌曲名和歌手名
+                        song_name = filename[:last_separator_index]
+                        singer_name = filename[last_separator_index +2:result.start(2) + len(result.group(2))]
+                        file_extension = result.group(3)
+                        # 根据文件拓展名处理歌曲名
+                        if file_extension == '.flac': # 无损压缩
+                            song_name = song_name + '(FLAC)'
+                        elif file_extension == '.wav': # 无损未压缩
+                            song_name = song_name + '(WAV)'
+                        elif file_extension == '.ogg': # 多媒体
+                            song_name = song_name + '(OGG)'
+                    else:
+                        song_name, _ = os.path.splitext(filename)
                     # 将搜索内容显示到图表中
                     self.add_tree_item(
-                        f'{key}',
-                        os.path.basename(self.main_window.play_dict[key]).replace(".mp3", '').split("--")[0],
-                        f'{singer_name}'
+                        f'{key}', # 音频文件在目录中的序号
+                        song_name,  # 提取的歌曲名
+                        singer_name # 提取的歌手名
                     )
             if num <= 0:
                 QMessageBox.warning(self, '搜素结束', '很抱歉,没有找到歌曲', QMessageBox.Ok)
         else:
-            QMessageBox.critical(
-                self, 'ERROR', '您未输入需查询的歌曲, 请输入后搜索!', QMessageBox.Retry)
+            QMessageBox.critical(self, 'ERROR', '您未输入需查询的歌曲, 请输入后搜索!', QMessageBox.Retry)
 
     def add_tree_item(self, text1, text2, text3) -> None:
         """ 自定义的树形图方法,用于批量添加项目 """
@@ -115,15 +129,12 @@ class SearchUI(QDialog):
 
     def search_ui_play(self) -> None:
         """ 播放(二级UI按钮绑定操作),用于播放选中的歌曲"""
-        if self.onclick_song_number is None or isinstance(
-            self.main_window.current_music_number, str
-        ):
+        if self.onclick_song_number is None or isinstance(self.main_window.current_music_number, str):
             QMessageBox.warning(self, 'Warning', '您未选定歌曲', QMessageBox.Ok)
         else:
             if self.main_window.current_music_number is not None:
                 self.main_window.player.pause()
                 self.main_window.player.delete()
-            # self.main_window.change_label_current_play_content()
             self.main_window.play_song()
             # 按钮文本显示为"暂停"
             self.main_window.button_pause_or_begin.setText('暂停')
@@ -233,7 +244,7 @@ class SearchUI(QDialog):
             '鼠标左键单击选定需要播放的歌曲,点击播放按钮即可.'
             '\n4.点击播放后,该搜索界面会自动关闭,如有二次需求请重新进入.'
             '\n5.并不是所有的音乐文件名都符合规范,为了好的体验请保持文件名格式为:'
-            '\n歌曲名(歌曲信息)--歌手1&歌手2...(歌手信息).mp3',
+            '\n歌曲名(歌曲信息)--歌手1&歌手2...(歌手信息).后缀名',
             Alignment=Qt.AlignLeft,
             Geometry=(110, 650, 1200, 300),
             ObjectName=style_js["label_use_attention_text"],

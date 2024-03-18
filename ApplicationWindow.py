@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-14 23:25:30
+LastEditTime: 2024-03-18 23:35:58
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
 Description: 
 
@@ -15,8 +15,9 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) ${2024} by ${HDJ}, All Rights Reserved. 
 '''
-import glob
+import re
 import os
+import glob
 import random
 import pyglet
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
@@ -44,16 +45,11 @@ class ApplicationWindow(QMainWindow):
         self.setWindowTitle("Music Player")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
         self.setWindowIcon(QIcon(config_js['ApplicationWindowIcon']))
-        PackingModificationMethod.set_background_image(
-            self, config_js['ApplicationWindowBackGround'])
+        PackingModificationMethod.set_background_image(self, config_js['ApplicationWindowBackGround'])
         PackingModificationMethod.set_desktop_center(self)
         # 一级UI界面的层次设置, False置于最底部, True置顶
         self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         # self.setWindowFlag(Qt.FramelessWindowHint) # 移除程序窗框饰条
-
-        # 方法绑定
-        self.build_platform()
-
         # 底层变量
         self.player = pyglet.media.Player()  # 播放器
         self.music_folder_path = config_js['music_folder_path']  # 获取音乐文件夹的绝对路径
@@ -67,7 +63,9 @@ class ApplicationWindow(QMainWindow):
         self.need_cycle = config_js['need_cycle']  # 是否循环播放的标志
         self.file_total_time = config_js['file_total_time']  # 音乐文件总时长
         self.key_press_programme = config_js['key_press_programme']  # 键盘快捷方案序号
-
+        self.current_music_name = config_js['current_music_name']
+        # 方法绑定
+        self.build_platform()
         # 绑定线程
         self.is_over_monitor = IsOverMonitor(self)
         self.key_board_listener = KeyboardListener(self)
@@ -80,10 +78,14 @@ class ApplicationWindow(QMainWindow):
         self.play_dict = {}
         # 导入音乐文件夹
         music_file_path = self.music_folder_path
-        # 获取全部mp3文件的路径列表
-        mp3_files_list = glob.glob(os.path.join(music_file_path, '*.mp3'))
+        # 获取全部音乐文件的路径列表
+        music_files_list = []
+        for file_type in config_js['audio_file_suffix']:
+            one_type_list = glob.glob(os.path.join(music_file_path, '*' + file_type))
+            if one_type_list:
+                music_files_list.extend(one_type_list)
         # 创建播放字典
-        for music_number, music_path in enumerate(mp3_files_list, start=1):
+        for music_number, music_path in enumerate(music_files_list, start=1):
             self.play_dict[f'{music_number}'] = f'{music_path}'
 
     def play_song(self, music_position=0) -> None:
@@ -120,11 +122,36 @@ class ApplicationWindow(QMainWindow):
         """ 用于更改"当前播放歌曲"标签显示内容的操作 """
         music_file_path = self.play_dict.get(f'{self.current_music_number}')
         music_file_name = os.path.basename(music_file_path)
-        self.label_current_play_content.setText(music_file_name.replace('.mp3', ''))
+        
+        pattern = r"(.+?)--(.+?)(" + "|".join(re.escape(suffix) for suffix in config_js['audio_file_suffix']) + ")$" # 将配置文件中的所有后缀转译,拼接,添加到末尾
+        result = re.search(pattern, music_file_name)
+
+        singer_name = '暂无'
+        if result:
+            # 在文件名中找到最后一个 '--' 分隔符的索引
+            last_separator_index = music_file_name.rfind("--")
+            # 获取歌曲名和歌手名
+            song_name = music_file_name[:last_separator_index]
+            singer_name = music_file_name[last_separator_index + 2:result.start(2) + len(result.group(2))]
+            file_extension = result.group(3)
+            # 根据文件拓展名处理歌曲名
+            if file_extension == '.flac': # 无损压缩
+                song_name = song_name + '(FLAC)'
+            elif file_extension == '.wav': # 无损未压缩
+                song_name = song_name + '(WAV)'
+            elif file_extension == '.ogg': # 多媒体
+                song_name = song_name + '(OGG)'
+            self.label_current_play_content.setText(f'{song_name}--{singer_name}')
+        else:
+            song_name, _ = os.path.splitext(music_file_name)
+            self.label_current_play_content.setText(song_name)
+        self.current_music_name = song_name
 
     def random_play(self) -> None:
         """ 随机播放(按钮绑定操作) """
-        if self.current_music_number is not None:
+        if not self.initializationDetection():
+            return
+        if self.current_music_number:
             self.player.pause()
         if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
             self.current_music_number = int(self.current_music_number.replace('*', ''))
@@ -135,6 +162,8 @@ class ApplicationWindow(QMainWindow):
 
     def previous_play(self) -> None:
         """ 上一首(按钮绑定操作) """
+        if not self.initializationDetection():
+            return
         if not self.current_music_number:
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
@@ -150,6 +179,8 @@ class ApplicationWindow(QMainWindow):
 
     def next_play(self) -> None:
         """ 下一首(按钮绑定操作) """
+        if not self.initializationDetection():
+            return
         if not self.current_music_number:
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
@@ -165,7 +196,8 @@ class ApplicationWindow(QMainWindow):
 
     def music_pause(self) -> None:
         """ 暂停||开始(按钮绑定操作) """
-
+        if not self.initializationDetection():
+            return
         # 开始路径1:如果之前无播放内容,则随机播放  QwQ:克服选择困难症
         if not self.current_music_number:
             self.random_play()
@@ -199,6 +231,8 @@ class ApplicationWindow(QMainWindow):
 
     def single_cycle_play(self) -> None:
         """ 单曲循环(按钮绑定操作) """
+        if not self.initializationDetection():
+            return
         if not self.current_music_number:
             QMessageBox.critical(self, '错误', '请点击开始播放')
         else:
@@ -217,6 +251,17 @@ class ApplicationWindow(QMainWindow):
         reply = QMessageBox.question(self, '温馨提示', '记得给 作者:HDJ 一颗小星星', QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.close()  # 使用close方法来关闭窗口
+    
+    def initializationDetection(self) -> bool:
+        """初始化检测, 通过检测将返回True"""
+        if not self.music_folder_path:
+            QMessageBox.critical(self, "Music Player", "未检测到歌单, 请检查歌单配置")
+            return False
+        if not self.play_dict:
+            QMessageBox.critical(self, "Music Player", "当前歌单为空")
+            return False
+        return True
+
 
     def build_platform(self) -> None:
         """ 一级UI搭建(使用绝对布局,写死UI界面) """
@@ -242,7 +287,7 @@ class ApplicationWindow(QMainWindow):
 
         # 显示当先正在播放歌曲名称的标签
         self.label_current_play_content = Label.create(
-            parent=self, text=config_js['current_music_name'],
+            parent=self, text=self.current_music_name,
             WordWrap=True,  # 允许自动换行 QwQ:这个很重要
             Alignment=Qt.AlignVCenter | Qt.AlignLeft,
             TextInteractionFlags=Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard,  # 允许鼠标,键盘与标签文本交互

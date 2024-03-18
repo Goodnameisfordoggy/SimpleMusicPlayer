@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-03-13 22:20:30
+LastEditTime: 2024-03-15 22:29:09
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingPages.py
 Description: 
 
@@ -255,13 +255,14 @@ class PageSongList(QScrollArea):
     def get_all_audio_files_in_folder(self, folder_path: str) -> list:
         """获取所选文件夹下的全部音频文件名称"""
         audio_files = []
-
-        for file_name in os.listdir(folder_path):
-            file_path = os.path.join(folder_path, file_name)
-            if os.path.isfile(file_path): # 判断file_path指向的是否为文件
-                base_name, file_extension = os.path.splitext(file_name) # 分离文件名基本部分与拓展名
-                if file_extension.lower() in config_js['audio_file_suffix']: # 检查文件的小写拓展名是否符合要求
-                    audio_files.append(file_name)
+        
+        if folder_path:
+            for file_name in os.listdir(folder_path):
+                file_path = os.path.join(folder_path, file_name)
+                if os.path.isfile(file_path): # 判断file_path指向的是否为文件
+                    base_name, file_extension = os.path.splitext(file_name) # 分离文件名基本部分与拓展名
+                    if file_extension.lower() in config_js['audio_file_suffix']: # 检查文件的小写拓展名是否符合要求
+                        audio_files.append(file_name)
 
         return audio_files
 
