@@ -1,8 +1,8 @@
 '''
 Author: HDJ
-StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-08 22:35:47
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\MusicPlayer.py
+StartDate: please fill in
+LastEditTime: 2024-03-24 21:11:01
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\__init__.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,17 +15,3 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-import sys
-from PyQt5.QtWidgets import QApplication
-from ApplicationWindow import ApplicationWindow
-
-
-def main():
-    app = QApplication(sys.argv)  # 可操作命令行参数
-    window = ApplicationWindow()
-    window.show()
-    sys.exit(app.exec_())
-
-
-if __name__ == '__main__':
-    main()

@@ -102,12 +102,12 @@
     "#2": "运行数据,严禁更改!",
     "music_folder_path": "F:\\歌曲\\自定义歌单\\❤️",
     "foregoing_songlist": "F:\\歌曲\\自定义歌单\\❤️",
-    "current_music_number": "*5*",
-    "file_total_time": 174,
-    "current_position": 0.30246853828430176,
+    "current_music_number": 1,
+    "file_total_time": 239,
+    "current_position": 0.5816824436187744,
     "need_cycle": false,
     "key_press_programme": "0",
-    "current_music_name": "喀秋莎(Live)",
+    "current_music_name": "Eminem Vs Psy - Without Style",
     "use_custom_shortcut_keys": false,
     "custom_shortcut_keys": {
         "next_play": "Space",
@@ -135,6 +135,7 @@
         "9": "F:\\歌曲\\自定义歌单\\❤️\\祖海 - 好运来.mp3",
         "10": "F:\\歌曲\\自定义歌单\\❤️\\谁家.mp3",
         "11": "F:\\歌曲\\自定义歌单\\❤️\\阿炳 - 二泉映月 (高韶青二胡独奏).mp3",
-        "12": "F:\\歌曲\\自定义歌单\\❤️\\Love Story--Taylor Swift.flac"
+        "12": "F:\\歌曲\\自定义歌单\\❤️\\Love Story--Taylor Swift.wav",
+        "13": "F:\\歌曲\\自定义歌单\\❤️\\Love Story--Taylor Swift.flac"
     }
 }

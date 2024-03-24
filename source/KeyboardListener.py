@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-13 22:11:15
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\KeyboardListener.py
+LastEditTime: 2024-03-24 20:55:38
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\KeyboardListener.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；

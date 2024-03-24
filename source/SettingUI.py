@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-04 22:36:41
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SettingUI.py
+LastEditTime: 2024-03-24 20:52:36
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\SettingUI.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -15,14 +15,17 @@ Description:
 				*		不见满街漂亮妹，哪个归得程序员？    
 Copyright (c) 2024 by HDJ, All Rights Reserved. 
 '''
-import os
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QWidget, QHBoxLayout, QMainWindow, QVBoxLayout, QStackedLayout
 from Simple_Qt import PushButton, Menu, Action
 from DataProtector import style_css
 from SearchUI import SearchUI
-from SettingPages import PageSongList, PageImageSetting, PageShortcutSetting, PageConfigFiles
+from settingUIPages.pageConfigFiles import *
+from settingUIPages.pageImageSetting import *
+from settingUIPages.pageShortcutSetting import *
+from settingUIPages.pageSongList import *
+
 
 default_button_style = """
     QPushButton { 

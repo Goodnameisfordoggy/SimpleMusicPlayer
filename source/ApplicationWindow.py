@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-18 23:35:58
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\ApplicationWindow.py
+LastEditTime: 2024-03-24 01:07:47
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\ApplicationWindow.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -24,7 +24,6 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 from Simple_Qt import Label, PushButton, PackingModificationMethod
-from SearchUI import SearchUI
 from IsOverMonitor import IsOverMonitor
 from KeyboardListener import KeyboardListener
 from DataProtector import DataProtector

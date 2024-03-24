@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-18 23:36:36
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\DataProtector.py
+LastEditTime: 2024-03-24 21:27:34
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\DataProtector.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -23,11 +23,11 @@ import time
 
 # 声明全局变量
 # 获取当前文件所在目录的绝对路径
-WORKING_DIRECTORY_PATH = os.path.dirname(os.path.abspath(__file__))
+WORKING_DIRECTORY_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 图片文件夹路径
-IMAGE_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__)) + r'\phbimage'
+IMAGE_FOLDER_PATH = WORKING_DIRECTORY_PATH + r'\phbimage'
 # 配置文件夹路径
-CONFIG_FOLDER_PATH = os.path.dirname(os.path.abspath(__file__)) + r'\profiles'
+CONFIG_FOLDER_PATH = WORKING_DIRECTORY_PATH + r'\profiles'
 # 读取 PlayerConfig.json, PlayerStyle.json文件并加载为 JSON 对象
 with open(CONFIG_FOLDER_PATH + r'\PlayerConfig.json', 'r', encoding='utf-8') as config_json:
     config_js = json.load(config_json)
