@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-02-04 18:11:57
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\Simple_Qt.py
+LastEditTime: 2024-03-25 00:18:52
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\Simple_Qt.py
 Description: 对常用组件的属性,方法的简单集成
 
 				*		写字楼里写字间，写字间里程序员；
@@ -70,10 +70,12 @@ class Label():
 
 class PushButton():
 
-    # @typing.overload
-    # def create(clicked_callback: typing.Callable) -> QPushButton:...
-    # @typing.overload
-    # def create(clicked_callback: [typing.Callable, any]) -> QPushButton:...
+    @staticmethod
+    @typing.overload
+    def create(clicked_callback: typing.Callable) -> QPushButton:...
+    @staticmethod
+    @typing.overload
+    def create(clicked_callback: list[typing.Callable, any]) -> QPushButton:...
     @staticmethod
     def create(
         parent: QWidget | None = ..., 
@@ -146,11 +148,13 @@ class Menu():
     
 
 class Action():
-
-    # @typing.overload
-    # def create(triggered_callback: typing.Callable) -> QAction:...
-    # @typing.overload
-    # def create(triggered_callback: [typing.Callable, any]) -> QAction:...
+    
+    @staticmethod
+    @typing.overload
+    def create(triggered_callback: typing.Callable) -> QAction:...
+    @staticmethod
+    @typing.overload
+    def create(triggered_callback: list[typing.Callable, any]) -> QAction:...
     @staticmethod
     def create(
         parent: QWidget | None = ..., 
@@ -184,7 +188,16 @@ class Action():
     
 
 class Layout():
-
+    
+    @staticmethod
+    @typing.overload
+    def create(children: list[QWidget | QLayout | QSpacerItem]) -> QLayout: ...
+    @staticmethod
+    @typing.overload
+    def create(children: list[tuple[QWidget, int]]) -> QLayout: ...
+    @staticmethod
+    @typing.overload
+    def create(children: list[tuple[QWidget, int, Qt.AlignmentFlag]]) -> QLayout: ...
     @staticmethod
     def create(
         name: str = '',
@@ -220,6 +233,16 @@ class Layout():
                     layout.addLayout(child)
                 elif isinstance(child, QSpacerItem):
                     layout.addSpacerItem(child)
+                elif isinstance(child, tuple) and isinstance(child[0], QWidget):
+                    widget = child[0]
+                    stretch = 0
+                    alignment = Qt.Alignment()
+                    try:
+                        stretch = child[1]
+                        alignment = child[2]
+                    except IndexError:
+                        pass
+                    layout.addWidget(widget, stretch, alignment)
                 else:
                     raise TypeError("组件类型错误!")
         return layout

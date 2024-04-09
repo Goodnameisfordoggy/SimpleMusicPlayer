@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-03-24 00:37:24
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\settingUIPages\pageShortcutSetting.py
+LastEditTime: 2024-04-09 23:33:55
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageShortcutSetting.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -153,7 +153,7 @@ class PageShortcutSetting(QScrollArea):
             self.showKeyPressProgramme()
 
         # widget2布局
-        action_list =['next_play', 'previous_play', 'music_pause', 'random_play', 'single_cycle_play']
+        action_list =['next_play', 'previous_play', 'pause_or_begin', 'random_play', 'single_cycle_play']
         for i in range(len(action_list)):
             Editer = ShortcutEditer(
                 f'Editer{i + 1}', 

@@ -1,7 +1,7 @@
 {
     "#1": "自行配置",
     "#1.1": "# 配置自己的本地音乐文件夹路径",
-    "music_folders_path": [
+    "playlist_path": [
         [
             "",
             [
@@ -17,7 +17,7 @@
     "SearchUIIcon": "phbimage\\Beauty With Headset.png",
 
     "#2": "以下参数严禁更改!",
-    "music_folder_path": "",
+    "current_songlist_path": "",
     "foregoing_songlist": "",
     "current_music_number": "*0*",
     "file_total_time": 0,
@@ -33,12 +33,12 @@
         "random_play": "按下快捷键",
         "single_cycle_play": "按下快捷键"
     },
-    "current_playlist_category": "",
-    "audio_file_suffix": [
+    "current_songlist_group": "",
+    "audio_file_suffixes": [
         ".mp3",
         ".wav",
         ".ogg",
         ".flac"
     ],
-    "play_dict": {}
+    "current_songlist": {}
 }

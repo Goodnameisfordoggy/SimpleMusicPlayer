@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-18 23:24:37
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\SearchUI.py
+LastEditTime: 2024-04-09 23:18:29
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\SearchUI.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -63,7 +63,7 @@ class SearchUI(QDialog):
 
     def exec_rewrite(self) -> None:
         """ 自定义的窗口呼出方法 """
-        self.label_current_folder.setText(os.path.basename(config_js['music_folder_path']))
+        self.label_current_folder.setText(os.path.basename(config_js['current_songlist_path']))
         self.show()
         self.main_window.showMinimized()
 
@@ -73,13 +73,13 @@ class SearchUI(QDialog):
         if len(input_song_name) > 0:
             self.treeview_search_result.clear()  # 清除图表所有项
             num = 0
-            for key, value in self.main_window.play_dict.items():  # 在循环中处理键和值,items()方法将返回 包含字典中的键值对的 可迭代对象
+            for key, value in self.main_window.current_songlist.items():  # 在循环中处理键和值,items()方法将返回 包含字典中的键值对的 可迭代对象
                 # 判断用户输入内容与音乐文件名是否有重叠
                 filename = os.path.basename(value)
                 if input_song_name in filename:
                     num += 1
                     # 用正则表达式来提取歌手的名字
-                    pattern = r"(.+?)--(.+?)(" + "|".join(re.escape(suffix) for suffix in config_js['audio_file_suffix']) + ")$" # 将配置文件中的所有后缀转译,拼接,添加到末尾
+                    pattern = r"(.+?)--(.+?)(" + "|".join(re.escape(suffix) for suffix in config_js['audio_file_suffixes']) + ")$" # 将配置文件中的所有后缀转译,拼接,添加到末尾
                     result = re.search(pattern, filename)
                     singer_name = "暂无"
                     if result:
@@ -168,7 +168,7 @@ class SearchUI(QDialog):
 
         # 显示当前文件夹路径的标签
         self.label_current_folder = Label.create(
-            parent=self, text=os.path.basename(config_js['music_folder_path']),
+            parent=self, text=os.path.basename(config_js['current_songlist_path']),
             Alignment=Qt.AlignVCenter,
             Geometry=(450, 100, 550, 60),
             ObjectName=style_js["label_current_folder"],

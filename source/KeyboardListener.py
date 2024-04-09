@@ -76,7 +76,7 @@ class KeyboardListener(object):
             # 暂停/开始'space'
             elif str(key) == 'Key.space':
                 print("'space' has been pressed")
-                self.main_window.music_pause()
+                self.main_window.pause_or_begin()
             # 随机播放'r'
             elif key.char == 'r':
                 print("'r' has been pressed")
@@ -103,7 +103,7 @@ class KeyboardListener(object):
             # 暂停/开始'Ctrl+s'
             elif key.char == '\x13':
                 print("'Ctrl+s' has been pressed")
-                self.main_window.music_pause()
+                self.main_window.pause_or_begin()
             # 随机播放'Ctrl+r'
             elif key.char == '\x12':
                 print("'Ctrl+r' has been pressed")
@@ -130,7 +130,7 @@ class KeyboardListener(object):
             # 暂停/开始'5'
             elif str(key) == '<101>':
                 print("'5' has been pressed")
-                self.main_window.music_pause()
+                self.main_window.pause_or_begin()
             # 随机播放'1'
             elif str(key) == '<97>':
                 print("'1' has been pressed")
@@ -157,7 +157,7 @@ class KeyboardListener(object):
             # 暂停/开始'Ctrl+5'
             elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('5'):
                 print("'Ctrl+5' has been pressed")
-                self.main_window.music_pause()
+                self.main_window.pause_or_begin()
             # 随机播放'Ctrl+1'
             elif keyboard.is_pressed('ctrl') and keyboard.is_pressed('1'):
                 print("'Ctrl+1' has been pressed")
@@ -173,7 +173,7 @@ class KeyboardListener(object):
     #     content = {
     #     "播放下一首":[self.main_window.next_play()],
     #     "播放上一首":[self.main_window.previous_play()],
-    #     "开始/暂停播放":[self.main_window.music_pause()],
+    #     "开始/暂停播放":[self.main_window.pause_or_begin()],
     #     "随机播放":[self.main_window.random_play()],
     #     "循环播放":[self.main_window.single_cycle_play()]
     # }
@@ -185,8 +185,8 @@ class KeyboardListener(object):
             elif keyboard.is_pressed(config_js['custom_shortcut_keys']['previous_play']):
                 self.main_window.previous_play()
             # 暂停/开始
-            elif keyboard.is_pressed(config_js['custom_shortcut_keys']['music_pause']):
-                self.main_window.music_pause()
+            elif keyboard.is_pressed(config_js['custom_shortcut_keys']['pause_or_begin']):
+                self.main_window.pause_or_begin()
             # 随机播放
             elif keyboard.is_pressed(config_js['custom_shortcut_keys']['random_play']):
                 self.main_window.random_play()

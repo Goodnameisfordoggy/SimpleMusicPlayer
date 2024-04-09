@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-24 21:27:34
+LastEditTime: 2024-04-09 23:46:22
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\DataProtector.py
 Description: 
 
@@ -46,19 +46,18 @@ class DataProtector(object):
         self.main_window = main_window
 
         # 线程绑定  daemon=True 设置该线程为守护线程,随主线程结束而退出
-        self.thread_data_protector = threading.Thread(
-            target=self.callbackfunc, daemon=True, name='DataProtector')
+        self.thread_data_protector = threading.Thread(target=self.callbackfunc, daemon=True, name='DataProtector')
         self.thread_data_protector.start()
 
     def synchronous_data(self) -> None:
         """ 同步数据到 config_js <class 'dict'> """
         try:
-            config_js['music_folder_path'] = self.main_window.music_folder_path
+            config_js['current_songlist_path'] = self.main_window.current_songlist_path
             config_js['current_music_number'] = self.main_window.current_music_number
             config_js['file_total_time'] = self.main_window.file_total_time
             config_js['current_position'] = self.main_window.player.time
             config_js['need_cycle'] = self.main_window.need_cycle
-            config_js['play_dict'] = self.main_window.play_dict
+            config_js['current_songlist'] = self.main_window.current_songlist
             config_js['current_music_name'] = self.main_window.current_music_name
             
         except AttributeError:
