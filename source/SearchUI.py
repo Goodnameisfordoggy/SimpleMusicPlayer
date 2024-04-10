@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-09 23:18:29
+LastEditTime: 2024-04-10 23:50:38
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\SearchUI.py
 Description: 
 
@@ -18,6 +18,7 @@ Copyright (c) 2023~2024 by HDJ, All Rights Reserved.
 import os
 import re
 import sys
+import typing
 from PyQt5.QtWidgets import QApplication, QMessageBox, QDialog, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
@@ -251,6 +252,7 @@ class SearchUI(QDialog):
             StyleSheet=style_css
         )
 
+    @typing.override
     def closeEvent(self, event) -> None:
         """ 二级UI窗口关闭方法重写 """
         # 将一级UI界面还原到上一次最小化前的位置

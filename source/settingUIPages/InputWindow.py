@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-10 20:43:36
+LastEditTime: 2024-04-10 23:32:57
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\InputWindow.py
 Description: 
 
@@ -23,7 +23,7 @@ from PyQt5.QtCore import Qt
 
 class InputWindow(QDialog):
     
-    def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定'):
+    def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定') -> None:
         super().__init__()
         self._user_input: str = ''
         self._is_close: bool = False
@@ -33,7 +33,7 @@ class InputWindow(QDialog):
         self.initUI()
         self.setWindowFlag(Qt.WindowStaysOnTopHint)
 
-    def initUI(self):
+    def initUI(self) -> None:
         self.setWindowTitle(self._title)
         self.setFixedSize(500, 150)
 
@@ -57,12 +57,12 @@ class InputWindow(QDialog):
         return self._user_input
 
     @user_input.setter
-    def user_input(self, value):
+    def user_input(self, value) -> None:
         self._user_input = value
         
 
     @user_input.deleter
-    def user_input(self):
+    def user_input(self) -> None:
         del self._user_input
     
     @property
@@ -70,31 +70,31 @@ class InputWindow(QDialog):
         return self._is_close
 
     @is_close.setter
-    def is_close(self, value):
+    def is_close(self, value) -> None:
         self._is_close = value
 
     @is_close.deleter
-    def is_close(self):
+    def is_close(self) -> None:
         del self._is_close
 
     @abstractmethod
     def get_input(self):
         raise NotImplementedError("该方法需要被重写!")
     
-    def _show(self):
+    def _show(self) -> None:
         self.show()
     
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         self.is_close = True
         super().closeEvent(event)
 
 
 # class InputWindow2(InputWindow):
     
-#     def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定'):
+#     def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定') -> None:
 #         super().__init__(title, text, button_text)
     
-#     def get_input(self):
+#     def get_input(self) -> None:
 #         print('InputWindow2')
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-09 23:34:20
+LastEditTime: 2024-04-10 23:48:22
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\ApplicationWindow.py
 Description: 
 
@@ -18,6 +18,7 @@ Copyright (c) 2023~2024 by HDJ, All Rights Reserved.
 import re
 import os
 import glob
+import typing
 import random
 import pyglet
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
@@ -372,12 +373,14 @@ class ApplicationWindow(QMainWindow):
         menu_setting = SettingUI(app=self)
 
     # 窗口跟随鼠标移动(单击拖动窗口)
+    @typing.override
     def mousePressEvent(self, event) -> None:
         """ 一级UI的鼠标点击事件 """
 
         # 记录鼠标按下时的位置
         self.drag_start_position = event.globalPos()
 
+    @typing.override
     def mouseMoveEvent(self, event) -> None:
         """ 一级UI的鼠标移动事件 """
         if hasattr(self, 'drag_start_position'):
@@ -391,6 +394,7 @@ class ApplicationWindow(QMainWindow):
             # 更新起始位置，以便下一次移动计算
             self.drag_start_position = event.globalPos()
 
+    @typing.override
     def mouseReleaseEvent(self, event) -> None:
         """ 一级UI的鼠标释放事件 """
 
@@ -398,6 +402,7 @@ class ApplicationWindow(QMainWindow):
         if hasattr(self, 'drag_start_position'):
             delattr(self, 'drag_start_position')
 
+    @typing.override
     def closeEvent(self, event) -> None:
         """ 一级UI窗口关闭事件 """
         # 调用父类的 closeEvent 方法，确保原有的行为能够正常执行

@@ -16,6 +16,7 @@ Description:
 Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''
 import sys
+import typing
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel)
@@ -233,8 +234,12 @@ class PageShortcutSetting(QScrollArea):
         # 将中心组件设置为滚动内容
         self.setWidget(central_widget)
 
+    @typing.override
     def eventFilter(self, obj, event):
-        """事件过滤器"""
+        """
+        事件过滤器:
+        忽略下拉列表框(QComboBox)的鼠标滚轮事件.
+        """
         if isinstance(obj, QComboBox) and event.type() == QEvent.Wheel:
             # 捕获滚轮事件并忽略
             return True
@@ -324,8 +329,7 @@ class PageShortcutSetting(QScrollArea):
                 shortcutEditer.removeEventFilter(shortcutEditer) # 清除事件过滤器
                 shortcutEditer.setStyleSheet("""QWidget{ min-height: 50px; background-color: white; font-size: 36px; color: gray; }""")
                 
-
-
+    @typing.override
     def mousePressEvent(self, event):
         """鼠标点击事件"""
         if self.widget2_optional_neutral:

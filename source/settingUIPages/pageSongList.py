@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-10 22:51:44
+LastEditTime: 2024-04-10 23:47:03
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageSongList.py
 Description: 
 
@@ -18,6 +18,7 @@ Copyright (c) 2023~2024 by HDJ, All Rights Reserved.
 import os
 import sys
 import time
+import typing
 import threading
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (
@@ -35,7 +36,7 @@ class PageSongList(QScrollArea):
             self.app = app
             self.setStyleSheet("QScrollArea { border: transparent; }")
             self.setWidgetResizable(True) # 组件可调整大小属性
-            self.fst_items_name = [sub_list[0] for sub_list in config_js['playlist_path'] if isinstance(sub_list[0], str)]
+            self.fst_items_name = [sub_list[0] for sub_list in config_js['playlist'] if isinstance(sub_list[0], str)]
             self.current_sec_items_name = []
             self.selected_subitem_AP = None # 选中项的绝对路径
             self.construct()
@@ -88,7 +89,7 @@ class PageSongList(QScrollArea):
         layout1 = Layout.create(name='QHBoxLayout', children=[(self.comboBox1, 3), (button1, 1)])
 
         self.comboBox2 = QComboBox()
-        for fst_items in config_js['playlist_path']:
+        for fst_items in config_js['playlist']:
             if fst_items[0] == config_js['current_songlist_group']:
                 self.current_sec_items_name = [sub_list[0] for sub_list in fst_items if isinstance(sub_list, list)]
         self.comboBox2.addItems(self.current_sec_items_name)
@@ -138,7 +139,7 @@ class PageSongList(QScrollArea):
     def create_a_new_group(self) -> None:
         """创建新的歌单组"""
         # 获取配置文件中旧的分组
-        existing_groups = [group[0]for group in config_js['playlist_path']]
+        existing_groups = [group[0]for group in config_js['playlist']]
         while True:
             user_input = self.group_name_inputWindow.user_input
             if self.group_name_inputWindow.is_close:
@@ -157,7 +158,7 @@ class PageSongList(QScrollArea):
                 else:
                     # 在配置文件的结构中添加新的分组项
                     new_group_item = [f'{user_input}']
-                    config_js['playlist_path'].append(new_group_item)
+                    config_js['playlist'].append(new_group_item)
                     # 在分组父级目录中创建新目录
                     os.makedirs(new_folder_AP)
                     # print("创建成功")
@@ -178,9 +179,9 @@ class PageSongList(QScrollArea):
     def create_a_new_songlist(self) -> None:
         """创建新的歌单"""
         # 获取配置文件中旧的分组, 获取当前分组在存储结构中的索引
-        existing_groups = [group[0]for group in config_js['playlist_path']]
+        existing_groups = [group[0]for group in config_js['playlist']]
         index = existing_groups.index(config_js['current_songlist_group'])
-        existing_playlists = [playlist[0] for playlist in config_js['playlist_path'][index][1:]]
+        existing_playlists = [playlist[0] for playlist in config_js['playlist'][index][1:]]
         
         while True:
             user_input = self.playlist_name_inputWindow.user_input
@@ -209,7 +210,7 @@ class PageSongList(QScrollArea):
                 else:       
                     # 在配置文件的结构中添加新的歌单项
                     new_playlist_item = [f'{user_input}'] + [new_folder_AP]
-                    for group in config_js['playlist_path']:
+                    for group in config_js['playlist']:
                         if group[0] == config_js['current_songlist_group']:
                             group.append(new_playlist_item)
                             break
@@ -222,7 +223,7 @@ class PageSongList(QScrollArea):
                 # print("pass")
                 pass
         
-    def on_item_clicked(self, item):
+    def on_item_clicked(self, item) -> None:
         file_name = item.text()
         self.selected_subitem_AP = os.path.join(config_js['current_songlist_path'], file_name) # 获取选中子项对应文件的绝对路径
         
@@ -383,19 +384,19 @@ class PageSongList(QScrollArea):
             if fst_item_name == selected_item:
                 self.comboBox2.clear()
                 # 根据匹配的歌单分组名在歌单分组名列表中的索引,获取该歌单分组下的全部歌单名称
-                sec_items = [sub_folder[0] for sub_folder in config_js['playlist_path'][self.fst_items_name.index(fst_item_name)][1:]]
+                sec_items = [sub_folder[0] for sub_folder in config_js['playlist'][self.fst_items_name.index(fst_item_name)][1:]]
                 self.comboBox2.addItems(sec_items)
     
     def comboBoxIndexChanged2(self, index) -> None:
         """ 处理下拉列表选择变化事件2 """
         combo_box = self.central_widget.sender()  # 获取发射信号的对象
         selected_item = combo_box.currentText()# 获取选定选项的文本内容
-        # 获取当前歌单组在playlist_path歌单结构中的索引
+        # 获取当前歌单组在playlist中的索引
         for fst_item_name in self.fst_items_name:
             if fst_item_name == config_js['current_songlist_group']:
                 fst_index = self.fst_items_name.index(fst_item_name)
         # 逐个获取当前歌单组下的歌单的路径
-        for sec_item_path in [sub_folder[1] for sub_folder in config_js['playlist_path'][fst_index][1:]]:
+        for sec_item_path in [sub_folder[1] for sub_folder in config_js['playlist'][fst_index][1:]]:
             # 找到下拉列表所选择的歌单名称, 将其对应的路径赋给app属性
             if os.path.basename(sec_item_path) == selected_item:
                 self.app.current_songlist_path = sec_item_path
@@ -403,9 +404,13 @@ class PageSongList(QScrollArea):
                 if hasattr(self, 'listWidget'):
                     self.listWidget.clear()
                     self.listWidget.addItems(self.get_all_audio_files_in_folder(sec_item_path))
-        
+   
+    @typing.override
     def eventFilter(self, obj, event):
-        """事件过滤器"""
+        """
+        事件过滤器:
+        忽略下拉列表框(QComboBox)的鼠标滚轮事件.
+        """
         if isinstance(obj, QComboBox) and event.type() == QEvent.Wheel:
             # 捕获滚轮事件并忽略
             return True
@@ -416,21 +421,23 @@ class PageSongList(QScrollArea):
 class InputNewGroupNameWindow(InputWindow):
     """新的分组名称输入窗口"""
     
-    def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定'):
+    def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定') -> None:
         super().__init__(title, text, button_text)
-    # 重写user_input方法
+    
+    @typing.override
     @property
     def user_input(self):
         return self._user_input
     
     @user_input.setter
-    def user_input(self, value):
+    def user_input(self, value) -> None:
         if not value.isdigit():
             self._user_input = value
         else:
             QMessageBox.warning(self, 'warning', '分组名不建议全为数字!')
 
-    def get_input(self):
+    @typing.override
+    def get_input(self) -> None:
         self.user_input = self.input_text.text()
         time.sleep(0.3)
         self.close()
@@ -439,21 +446,23 @@ class InputNewGroupNameWindow(InputWindow):
 class InputNewSonglistNameWindow(InputWindow):
     """新的分组名称输入窗口"""
     
-    def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定'):
+    def __init__(self, title: str = 'InputWindow', text: str = '请输入内容：', button_text: str = '确定') -> None:
         super().__init__(title, text, button_text)
-    # 重写user_input方法
+
+    @typing.override
     @property
     def user_input(self):
         return self._user_input
     
     @user_input.setter
-    def user_input(self, value):
+    def user_input(self, value) -> None:
         if not value.isdigit():
             self._user_input = value
         else:
             QMessageBox.warning(self, 'warning', '歌单名不建议全为数字!')
 
-    def get_input(self):
+    @typing.override
+    def get_input(self) -> None:
         self.user_input = self.input_text.text()
         time.sleep(0.3)
         self.close()
