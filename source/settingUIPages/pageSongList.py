@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-09 23:52:03
+LastEditTime: 2024-04-10 22:51:44
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageSongList.py
 Description: 
 
@@ -13,7 +13,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) 2024 by HDJ, All Rights Reserved. 
+Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''
 import os
 import sys
@@ -163,6 +163,7 @@ class PageSongList(QScrollArea):
                     # print("创建成功")
                     break   
             else:
+                time.sleep(0.2)
                 # print("pass")
                 pass
     
@@ -171,13 +172,11 @@ class PageSongList(QScrollArea):
         self.playlist_name_inputWindow = InputNewSonglistNameWindow(title='请输入新的歌单名', text='不能全为数字', button_text='创建')
         self.playlist_name_inputWindow._show()
         # 启用新线程等待用户输入
-        self.thread_create_a_new_group = threading.Thread(target=self.create_a_new_playlist, daemon=True, name='to_create_a_new_playlist')
+        self.thread_create_a_new_group = threading.Thread(target=self.create_a_new_songlist, daemon=True, name='to_create_a_new_songlist')
         self.thread_create_a_new_group.start()
-        
-        
 
-    def create_a_new_playlist(self) -> None:
-        """创建新的歌单组"""
+    def create_a_new_songlist(self) -> None:
+        """创建新的歌单"""
         # 获取配置文件中旧的分组, 获取当前分组在存储结构中的索引
         existing_groups = [group[0]for group in config_js['playlist_path']]
         index = existing_groups.index(config_js['current_songlist_group'])
@@ -193,23 +192,33 @@ class PageSongList(QScrollArea):
                 if user_input in existing_groups:
                     # print("歌单名已存在")
                     break
+                # 获取主目录路径
+                primary_folder_path = ''
+                if config_js['current_songlist_path']:
+                    primary_folder_path = os.path.dirname(os.path.dirname(config_js['current_songlist_path']))
+                elif config_js['foregoing_songlist_path']:
+                    primary_folder_path = os.path.dirname(os.path.dirname(config_js['foregoing_songlist_path']))
+                if not primary_folder_path:
+                    print("主目录路径获取失败!")
+                    break
                 # 生成新歌单目录绝对路径
-                new_folder_AP = os.path.join(os.path.dirname(os.path.dirname(config_js['current_songlist_path'])), user_input)
+                new_folder_AP = f'{primary_folder_path}\\{config_js['current_songlist_group']}\\{user_input}'
                 if os.path.exists(new_folder_AP): 
                     # print("目录已存在")
                     break
-                else:
+                else:       
                     # 在配置文件的结构中添加新的歌单项
-                    new_playlist_item = [f'{user_input}'] + []
+                    new_playlist_item = [f'{user_input}'] + [new_folder_AP]
                     for group in config_js['playlist_path']:
                         if group[0] == config_js['current_songlist_group']:
                             group.append(new_playlist_item)
                             break
-                    # 在分组父级目录中创建新目录
+                    # 在当前分组中创建新歌单目录
                     os.makedirs(new_folder_AP)
                     # print("创建成功")
                     break   
             else:
+                time.sleep(0.2)
                 # print("pass")
                 pass
         

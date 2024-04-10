@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-09 23:33:55
+LastEditTime: 2024-04-10 20:44:18
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageShortcutSetting.py
 Description: 
 
@@ -13,7 +13,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) 2024 by HDJ, All Rights Reserved. 
+Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''
 import sys
 from PyQt5.QtCore import Qt, QEvent

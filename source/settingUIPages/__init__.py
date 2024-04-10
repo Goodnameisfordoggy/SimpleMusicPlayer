@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-03-24 21:11:01
+LastEditTime: 2024-04-10 20:43:58
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\__init__.py
 Description: 
 
@@ -13,5 +13,5 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) 2024 by HDJ, All Rights Reserved. 
+Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''

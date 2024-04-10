@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-24 21:04:01
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\MusicPlayer.py
+LastEditTime: 2024-04-10 20:45:19
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\main.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -13,7 +13,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) 2024 by HDJ, All Rights Reserved. 
+Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''
 import sys
 from PyQt5.QtWidgets import QApplication

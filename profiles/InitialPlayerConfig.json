@@ -18,7 +18,7 @@
 
     "#2": "以下参数严禁更改!",
     "current_songlist_path": "",
-    "foregoing_songlist": "",
+    "foregoing_songlist_path": "",
     "current_music_number": "*0*",
     "file_total_time": 0,
     "current_position": 0.0,
@@ -29,7 +29,7 @@
     "custom_shortcut_keys": {
         "next_play": "按下快捷键",
         "previous_play": "按下快捷键",
-        "music_pause": "按下快捷键",
+        "pause_or_begin": "按下快捷键",
         "random_play": "按下快捷键",
         "single_cycle_play": "按下快捷键"
     },

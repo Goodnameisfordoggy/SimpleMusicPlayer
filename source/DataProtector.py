@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-09 23:46:22
+LastEditTime: 2024-04-10 20:45:06
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\DataProtector.py
 Description: 
 
@@ -13,7 +13,7 @@ Description:
 				*		奔驰宝马贵者趣，公交自行程序员。
 				*		别人笑我忒疯癫，我笑自己命太贱；
 				*		不见满街漂亮妹，哪个归得程序员？    
-Copyright (c) 2024 by HDJ, All Rights Reserved. 
+Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''
 import threading
 import json
