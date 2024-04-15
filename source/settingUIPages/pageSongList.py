@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-10 23:47:03
+LastEditTime: 2024-04-15 23:52:06
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageSongList.py
 Description: 
 
@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
 from Simple_Qt import Label, PushButton, Layout
 from .InputWindow import InputWindow
 from DataProtector import config_js
+from method import getPath, loadPlaylist, existSecondLevelDirectory, restartQuery
 
 
 class PageSongList(QScrollArea):
@@ -58,10 +59,26 @@ class PageSongList(QScrollArea):
         
         widget2 = QGroupBox(self.central_widget)
         widget2.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
+        
+        self.partial_initial_button = PushButton.create(
+            parent=self.central_widget, text="初始化播放列表", 
+            clicked_callback=self.partial_init,
+            StyleSheet=
+            """
+            QPushButton {
+            color: #ffffff;
+            background-color: #dd6060;
+            border-radius: 5px; 
+            padding: 1px 2px; 
+            }
+            QPushButton:hover {
+                background-color: #f78888; 
+            }
+            """)
 
         central_widget_layout = Layout.create(
             name="QVBoxLayout", parent=self.central_widget, 
-            children=[widget1, widget2])
+            children=[widget1, widget2, self.partial_initial_button])
         
         # widget1布局
         label1 = Label.create(
@@ -96,7 +113,7 @@ class PageSongList(QScrollArea):
         self.comboBox2.currentIndexChanged.connect(self.comboBoxIndexChanged2)
         self.comboBox2.installEventFilter(self)
 
-        button2 = PushButton.create(parent=self, text="创建新歌单", clicked_callback=self.wait_for_input_playlist_name)
+        button2 = PushButton.create(parent=self, text="创建新歌单", clicked_callback=self.wait_for_input_songlist_name)
 
         layout2 = Layout.create(name='QHBoxLayout', children=[(self.comboBox2, 3), (button2, 1)])
         
@@ -109,11 +126,11 @@ class PageSongList(QScrollArea):
         
         # widget2布局
         button3 = PushButton.create(
-            parent=widget2, text="移动到其他歌单", clicked_callback=self.move_to_other_playlist)
+            parent=widget2, text="移动到其他歌单", clicked_callback=self.move_to_other_songlist)
         button4 = PushButton.create(
-            parent=widget2, text="复制到其他歌单", clicked_callback=self.copy_to_other_playlist)
+            parent=widget2, text="复制到其他歌单", clicked_callback=self.copy_to_other_songlist)
         button5 = PushButton.create(
-            parent=widget2, text="从当前歌单移除", clicked_callback=self.removed_from_the_current_playlist)
+            parent=widget2, text="从当前歌单移除", clicked_callback=self.removed_from_the_current_songlist)
 
         layout3 = Layout.create(name='QHBoxLayout', children=[button3, button4, button5])
 
@@ -168,24 +185,24 @@ class PageSongList(QScrollArea):
                 # print("pass")
                 pass
     
-    def wait_for_input_playlist_name(self) -> None:
+    def wait_for_input_songlist_name(self) -> None:
         """创建一个窗口用来获取用户输入"""
-        self.playlist_name_inputWindow = InputNewSonglistNameWindow(title='请输入新的歌单名', text='不能全为数字', button_text='创建')
-        self.playlist_name_inputWindow._show()
+        self.songlist_name_inputWindow = InputNewSonglistNameWindow(title='请输入新的歌单名', text='不能全为数字', button_text='创建')
+        self.songlist_name_inputWindow._show()
         # 启用新线程等待用户输入
-        self.thread_create_a_new_group = threading.Thread(target=self.create_a_new_songlist, daemon=True, name='to_create_a_new_songlist')
-        self.thread_create_a_new_group.start()
+        self.thread_create_a_new_songlist = threading.Thread(target=self.create_a_new_songlist, daemon=True, name='to_create_a_new_songlist')
+        self.thread_create_a_new_songlist.start()
 
     def create_a_new_songlist(self) -> None:
         """创建新的歌单"""
         # 获取配置文件中旧的分组, 获取当前分组在存储结构中的索引
         existing_groups = [group[0]for group in config_js['playlist']]
         index = existing_groups.index(config_js['current_songlist_group'])
-        existing_playlists = [playlist[0] for playlist in config_js['playlist'][index][1:]]
+        existing_songlists = [songlist[0] for songlist in config_js['playlist'][index][1:]]
         
         while True:
-            user_input = self.playlist_name_inputWindow.user_input
-            if self.playlist_name_inputWindow.is_close:
+            user_input = self.songlist_name_inputWindow.user_input
+            if self.songlist_name_inputWindow.is_close:
                 # 输入窗口关闭
                 # print("窗口关闭")
                 break
@@ -209,10 +226,10 @@ class PageSongList(QScrollArea):
                     break
                 else:       
                     # 在配置文件的结构中添加新的歌单项
-                    new_playlist_item = [f'{user_input}'] + [new_folder_AP]
+                    new_songlist_item = [f'{user_input}'] + [new_folder_AP]
                     for group in config_js['playlist']:
                         if group[0] == config_js['current_songlist_group']:
-                            group.append(new_playlist_item)
+                            group.append(new_songlist_item)
                             break
                     # 在当前分组中创建新歌单目录
                     os.makedirs(new_folder_AP)
@@ -227,95 +244,84 @@ class PageSongList(QScrollArea):
         file_name = item.text()
         self.selected_subitem_AP = os.path.join(config_js['current_songlist_path'], file_name) # 获取选中子项对应文件的绝对路径
         
-    def move_to_other_playlist(self) -> None:
-        
+    def move_to_other_songlist(self) -> None:
         """移动到其他目录"""
         if self.selected_subitem_AP:
             # 检测选中的子项对应的文件是否存在
             if os.path.exists(self.selected_subitem_AP):
                 object_file_name = os.path.basename(self.selected_subitem_AP)  # 目标文件名
-                # 文件对话框设置
-                options = QFileDialog.Options()
-                options |= QFileDialog.DontUseNativeDialog  # 使用Qt的文件对话框，而不是本地对话框
-                file_dialog = QFileDialog()
-                file_dialog.setOptions(options)
-                file_dialog.setDirectory(os.path.dirname(config_js['current_songlist_path'])) # 设置文件对话框的初始位置为当前歌单的上级目录
-                # 打开文件对话框,获取用户所选目录绝对路径
-                folder_path = file_dialog.getExistingDirectory(self, '选择目标歌单')
-                # 检查目标目录是否存在同名文件
-                if os.path.exists(os.path.join(folder_path, object_file_name)):
-                    # 弹出提示框询问用户是否覆盖文件
-                    response = QMessageBox.question(
-                        self,
-                        '文件已存在',
-                        '目标目录中已存在同名文件，是否要覆盖?',
-                        QMessageBox.Yes | QMessageBox.No
-                    )
-                    if response == QMessageBox.No:
-                        return  # 如果用户选择不覆盖，则结束操作
-                # 读取目标文件内容
-                with open(self.selected_subitem_AP, 'rb') as file:
-                    content = file.read()
-                # 将目标文件添加到目标目录
-                with open(os.path.join(folder_path, object_file_name), 'wb') as file:
-                    file.write(content)
-                # 删除文件
-                os.remove(self.selected_subitem_AP)
-                # 将选中状态置空
-                self.selected_subitem_AP = None
-                # 完成提示
-                items_to_delete = self.listWidget.findItems(object_file_name, Qt.MatchExactly) # 查找包含目标文件名的项
-                # 如果找到匹配的项，删除第一个匹配项
-                if items_to_delete:
-                    item = items_to_delete[0]
-                    row = self.listWidget.row(item)
-                    self.listWidget.takeItem(row)
+                # 获取用户所选目录绝对路径
+                folder_path = getPath.get_folder_path(text = '选择目标歌单', initial_position = os.path.dirname(config_js['current_songlist_path']))
+                if folder_path:
+                    # 检查目标目录是否存在同名文件
+                    if os.path.exists(os.path.join(folder_path, object_file_name)):
+                        # 弹出提示框询问用户是否覆盖文件
+                        response = QMessageBox.question(
+                            self,
+                            '文件已存在',
+                            '目标目录中已存在同名文件，是否要覆盖?',
+                            QMessageBox.Yes | QMessageBox.No
+                        )
+                        if response == QMessageBox.No:
+                            return  # 如果用户选择不覆盖，则结束操作
+                    # 读取目标文件内容
+                    with open(self.selected_subitem_AP, 'rb') as file:
+                        content = file.read()
+                    # 将目标文件添加到目标目录
+                    with open(os.path.join(folder_path, object_file_name), 'wb') as file:
+                        file.write(content)
+                    # 删除文件
+                    os.remove(self.selected_subitem_AP)
+                    # 将选中状态置空
+                    self.selected_subitem_AP = None
+                    # 完成提示
+                    items_to_delete = self.listWidget.findItems(object_file_name, Qt.MatchExactly) # 查找包含目标文件名的项
+                    # 如果找到匹配的项，删除第一个匹配项
+                    if items_to_delete:
+                        item = items_to_delete[0]
+                        row = self.listWidget.row(item)
+                        self.listWidget.takeItem(row)
             else:
                 QMessageBox.critical(self, 'FileNotFoundError', '文件不存在!', QMessageBox.Ok)
         else:
             QMessageBox.warning(self, 'warning', '未选中文件!', QMessageBox.Ok)
 
-    def copy_to_other_playlist(self) -> None:
+    def copy_to_other_songlist(self) -> None:
         """复制到其他目录"""
         if self.selected_subitem_AP:
             # 检测选中的子项对应的文件是否存在
             if os.path.exists(self.selected_subitem_AP):
                 object_file_name = os.path.basename(self.selected_subitem_AP)  # 目标文件名
-                # 文件对话框设置
-                options = QFileDialog.Options()
-                options |= QFileDialog.DontUseNativeDialog  # 使用Qt的文件对话框，而不是本地对话框
-                file_dialog = QFileDialog()
-                file_dialog.setOptions(options)
-                file_dialog.setDirectory(os.path.dirname(config_js['current_songlist_path'])) # 设置文件对话框的初始位置为当前歌单的上级目录
-                # 打开文件对话框,获取用户所选目录绝对路径
-                folder_path = file_dialog.getExistingDirectory(self, '选择目标歌单')
-                # 检查目标目录是否存在同名文件
-                if os.path.exists(os.path.join(folder_path, object_file_name)):
-                    # 弹出提示框询问用户是否覆盖文件
-                    response = QMessageBox.question(
-                        self,
-                        '文件已存在',
-                        '目标目录中已存在同名文件，是否要覆盖?',
-                        QMessageBox.Yes | QMessageBox.No
-                    )
-                    if response == QMessageBox.No:
-                        return  # 如果用户选择不覆盖，则结束操作
-                # 读取目标文件内容
-                with open(self.selected_subitem_AP, 'rb') as file:
-                    content = file.read()
-                # 将目标文件添加到目标目录
-                with open(os.path.join(folder_path, object_file_name), 'wb') as file:
-                    file.write(content)
-                # 将选中状态置空
-                self.selected_subitem_AP = None
-                # 完成提示
-                QMessageBox.information(self, 'information', "复制成功")
+                # 获取用户所选目录绝对路径
+                folder_path = getPath.get_folder_path(text = '选择目标歌单', initial_position = os.path.dirname(config_js['current_songlist_path']))
+                if folder_path:
+                    # 检查目标目录是否存在同名文件
+                    if os.path.exists(os.path.join(folder_path, object_file_name)):
+                        # 弹出提示框询问用户是否覆盖文件
+                        response = QMessageBox.question(
+                            self,
+                            '文件已存在',
+                            '目标目录中已存在同名文件，是否要覆盖?',
+                            QMessageBox.Yes | QMessageBox.No
+                        )
+                        if response == QMessageBox.No:
+                            return  # 如果用户选择不覆盖，则结束操作
+                    # 读取目标文件内容
+                    with open(self.selected_subitem_AP, 'rb') as file:
+                        content = file.read()
+                    # 将目标文件添加到目标目录
+                    with open(os.path.join(folder_path, object_file_name), 'wb') as file:
+                        file.write(content)
+                    # 将选中状态置空
+                    self.selected_subitem_AP = None
+                    # 完成提示
+                    QMessageBox.information(self, 'information', "复制成功")
             else:
                 QMessageBox.critical(self, 'FileNotFoundError', "文件不存在!", QMessageBox.Ok)
         else:
             QMessageBox.warning(self, 'warning', "未选中文件!", QMessageBox.Ok)
             
-    def removed_from_the_current_playlist(self) ->None:
+    def removed_from_the_current_songlist(self) ->None:
         """从当前文件夹删除目标文件, 并添加到"最近删除"目录"""
         if self.selected_subitem_AP:
             song_library_path = os.path.dirname(config_js['current_songlist_path']) # 获取曲库路径
@@ -373,7 +379,6 @@ class PageSongList(QScrollArea):
 
         return audio_files
 
-
     def comboBoxIndexChanged1(self, index) -> None:
         """处理下拉列表选择变化事件1"""
         combo_box = self.central_widget.sender()  # 获取发射信号的对象
@@ -404,6 +409,18 @@ class PageSongList(QScrollArea):
                 if hasattr(self, 'listWidget'):
                     self.listWidget.clear()
                     self.listWidget.addItems(self.get_all_audio_files_in_folder(sec_item_path))
+    
+    def partial_init(self) -> None:
+        """局部初始化"""
+        # 获取用户选择的目录路径
+        folder_path = getPath.get_folder_path(caption="选择播放列表")
+        if folder_path:
+            if existSecondLevelDirectory.exist_second_level_directory(folder_path):
+                config_js['playlist_path'] = folder_path
+                config_js['playlist'] = loadPlaylist.load_playlist(folder_path)
+                restartQuery.restart_query(self)
+            else:
+                QMessageBox.warning(self, 'warning', '存储结构不符合条件!', QMessageBox.Ok)
    
     @typing.override
     def eventFilter(self, obj, event):

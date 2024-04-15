@@ -1,8 +1,8 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-03-24 00:34:00
-FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\settingUIPages\pageImageSetting.py
+LastEditTime: 2024-04-13 22:51:35
+FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageImageSetting.py
 Description: 
 
 				*		写字楼里写字间，写字间里程序员；
@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap
 from Simple_Qt import Label, PushButton, Layout
 from DataProtector import config_js
+from method import restartQuery, getPath
 
 
 class PageImageSetting(QScrollArea):
@@ -140,29 +141,13 @@ class PageImageSetting(QScrollArea):
         self.setWidget(central_widget)
     
     def select_a_file(self, config_js_key) -> None:
-         # 创建文件对话框
-        file_dialog = QFileDialog()
-        # 设置文件对话框的模式为选择文件
-        file_dialog.setFileMode(QFileDialog.ExistingFile)
-        # 明确指定允许的 MIME 类型为图片
-        mime_types = ["image/png", "image/jpeg", "image/bmp", "image/gif"]
-        file_dialog.setMimeTypeFilters(mime_types)
-        # 显示文件对话框
-        file_path, _ = file_dialog.getOpenFileName(None, "选择图片文件")
+        file_path = getPath.get_file_path(caption="选择图片文件", filter_type='Image')
         # 更改配置文件中的路径
         if file_path:
             # 将新的图片文件路径储存到配置文件
             config_js[config_js_key] = file_path
             time.sleep(0.2)
-            reply = QMessageBox.question(self, '', '该操作将在APP关闭后完成,是否立即重启?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if reply == QMessageBox.Yes:
-                # 获取当前执行的文件路径
-                current_file = sys.argv[0]
-                # 重启程序
-                os.execv(sys.executable, ['python3', current_file])
-            else:
-                QMessageBox.information(self, '提示', 'APP将在下次启动时使用新图片', QMessageBox.Ok)
-
+            restartQuery.restart_query(self)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # 可操作命令行参数
