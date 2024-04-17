@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-15 23:52:06
+LastEditTime: 2024-04-17 20:37:32
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageSongList.py
 Description: 
 
@@ -23,11 +23,11 @@ import threading
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QFileDialog, QMessageBox, QSizePolicy, QComboBox, QListWidget, 
-    QDialog)
+    QSpacerItem)
 from Simple_Qt import Label, PushButton, Layout
 from .InputWindow import InputWindow
-from DataProtector import config_js
-from method import getPath, loadPlaylist, existSecondLevelDirectory, restartQuery
+from DataProtector import config_js, load_playlist
+from method import getPath, existSecondLevelDirectory, restartQuery
 
 
 class PageSongList(QScrollArea):
@@ -49,7 +49,7 @@ class PageSongList(QScrollArea):
         # 中心组件
         self.central_widget = QGroupBox(None, self)
         self.central_widget.setStyleSheet("QGroupBox { border: none; }")
-        self.central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
+        # self.central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
         
         main_layout = Layout.create(name="QVBoxLayout", parent=self, children=[self.central_widget])
 
@@ -59,26 +59,12 @@ class PageSongList(QScrollArea):
         
         widget2 = QGroupBox(self.central_widget)
         widget2.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
-        
-        self.partial_initial_button = PushButton.create(
-            parent=self.central_widget, text="初始化播放列表", 
-            clicked_callback=self.partial_init,
-            StyleSheet=
-            """
-            QPushButton {
-            color: #ffffff;
-            background-color: #dd6060;
-            border-radius: 5px; 
-            padding: 1px 2px; 
-            }
-            QPushButton:hover {
-                background-color: #f78888; 
-            }
-            """)
+
+        widget3 = QWidget(self.central_widget)
 
         central_widget_layout = Layout.create(
             name="QVBoxLayout", parent=self.central_widget, 
-            children=[widget1, widget2, self.partial_initial_button])
+            children=[widget1, widget2, widget3])
         
         # widget1布局
         label1 = Label.create(
@@ -140,6 +126,29 @@ class PageSongList(QScrollArea):
         self.listWidget.itemClicked.connect(self.on_item_clicked)
 
         widget2_layout = Layout.create(name="QVBoxLayout", parent=widget2, children=[layout3, self.listWidget])
+
+        # widget3布局
+        spacer = Label.create(parent=widget3, text='')
+        
+        self.partial_initial_button = PushButton.create(
+            parent=self.central_widget, text="初始化播放列表", 
+            clicked_callback=self.partial_init,
+            StyleSheet=
+            """
+            QPushButton {
+            color: #ffffff;
+            font-size: 30px;
+            background-color: #f66c6c;
+            border-radius: 5px; 
+            min-height: 45px;
+            max-width: 230px;
+            }
+            QPushButton:hover {
+                background-color: #f78888; 
+            }
+            """)
+        
+        widget3_layout = Layout.create(name="QHBoxLayout", parent=widget3, children=[spacer, self.partial_initial_button])
 
         # 将中心组件设置为滚动内容
         self.setWidget(self.central_widget)
@@ -411,13 +420,16 @@ class PageSongList(QScrollArea):
                     self.listWidget.addItems(self.get_all_audio_files_in_folder(sec_item_path))
     
     def partial_init(self) -> None:
-        """局部初始化"""
+        """
+        局部初始化:
+        初始化播放列表
+        """
         # 获取用户选择的目录路径
         folder_path = getPath.get_folder_path(caption="选择播放列表")
         if folder_path:
             if existSecondLevelDirectory.exist_second_level_directory(folder_path):
                 config_js['playlist_path'] = folder_path
-                config_js['playlist'] = loadPlaylist.load_playlist(folder_path)
+                config_js['playlist'] = load_playlist(folder_path)
                 restartQuery.restart_query(self)
             else:
                 QMessageBox.warning(self, 'warning', '存储结构不符合条件!', QMessageBox.Ok)

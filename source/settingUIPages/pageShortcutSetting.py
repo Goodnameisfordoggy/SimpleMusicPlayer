@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-10 20:44:18
+LastEditTime: 2024-04-17 22:21:14
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageShortcutSetting.py
 Description: 
 
@@ -16,12 +16,13 @@ Description:
 Copyright (c) 2023~2024 by HDJ, All Rights Reserved. 
 '''
 import sys
+import time
 import typing
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QScrollArea, QGroupBox, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel)
-from Simple_Qt import Label, Layout
-from DataProtector import config_js
+    QApplication, QWidget, QScrollArea, QGroupBox, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel, QMessageBox)
+from Simple_Qt import Label, Layout, PushButton
+from DataProtector import config_js, clear_shortcut_settings
 from settingUIPages.ShortcutEditer import ShortcutEditer, DEFAULT_STYLE
 
 
@@ -34,7 +35,7 @@ class PageShortcutSetting(QScrollArea):
         
         self.items = ["不使用", "主键盘+方向键", "Ctrl+主键盘", "数字键盘", "Ctrl+数字键盘"]
         self.shortcut_content = {
-            '0': ["播放下一首", "播放上一首", "暂停/开始播放", "随机播放", "循环播放"],
+            '0': ["next_play", "previous_play", "pause_or_begin", "random_play", "single_cycle_play"],
             '1': ['right', 'left', 'space', 'R', 'O'],
             '2': ['Ctrl+D', 'Ctrl+A', 'Ctrl+S', 'Ctrl+R', 'Ctrl+Q'],
             '3': ['6', '4', '5', '1', '0'],
@@ -49,28 +50,30 @@ class PageShortcutSetting(QScrollArea):
         """ 页面UI搭建 """
         # 主布局
         # 中心组件
-        central_widget = QGroupBox(None, self)
-        central_widget.setStyleSheet("QGroupBox { border: transparent; background-color: #f0f0f0; }")
-        central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
+        self.central_widget = QGroupBox(None, self)
+        self.central_widget.setStyleSheet("QGroupBox { border: transparent; background-color: #f0f0f0; }")
+        self.central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
 
-        main_layout = Layout.create(name='QVBoxLayout', parent=self, children=[central_widget])
+        main_layout = Layout.create(name='QVBoxLayout', parent=self, children=[self.central_widget])
         # 中心组件布局
         label1 = Label.create(
-            parent=central_widget, text="内置方案", StyleSheet="font-size: 40px; font-weight: bold;")
+            parent=self.central_widget, text="内置方案", StyleSheet="font-size: 40px; font-weight: bold;")
         
-        self.widget1 = QWidget(central_widget)
+        self.widget1 = QWidget(self.central_widget)
         self.widget1.setObjectName("QWidget_1")
         self.widget1.setStyleSheet("#QWidget_1 { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
 
         label2 = Label.create(
-            parent=central_widget, text="自定义方案", StyleSheet="font-size: 40px; font-weight: bold;")
+            parent=self.central_widget, text="自定义方案", StyleSheet="font-size: 40px; font-weight: bold;")
         
-        self.widget2 = QGroupBox(None, central_widget)
+        self.widget2 = QGroupBox(None, self.central_widget)
         self.widget2.setObjectName("QGroupBox")
         self.widget2.setStyleSheet("#QGroupBox { background-color: #fdfdfd; border: 1px solid #e5e5e5; }")
 
+        self.widget3 = QWidget(self.central_widget)
+
         central_widget_layout =  Layout.create(
-            name='QVBoxLayout', parent=central_widget, children=[label1, self.widget1, label2, self.widget2])
+            name='QVBoxLayout', parent=self.central_widget, children=[label1, self.widget1, label2, self.widget2, self.widget3])
         # widget1布局
         label3 = Label.create(parent=self.widget1, text="选择与键盘适配的方案", StyleSheet="font-size: 30px; ")
 
@@ -231,8 +234,32 @@ class PageShortcutSetting(QScrollArea):
             self.checkbox.setChecked(True)
         else:
             self.customShortcutOptionalNeutrals()   
+        
+        # widget3布局
+        spacer = Label.create(parent=self.widget3, text='')
+        
+        self.partial_initial_button = PushButton.create(
+            parent=self.central_widget, text="清空快捷键设置", 
+            clicked_callback=self.partial_init,
+            StyleSheet=
+            """
+            QPushButton {
+            color: #ffffff;
+            font-size: 30px;
+            background-color: #f66c6c;
+            border-radius: 5px; 
+            min-height: 45px;
+            max-width: 230px;
+            }
+            QPushButton:hover {
+                background-color: #f78888; 
+            }
+            """)
+        
+        widget3_layout = Layout.create(name="QHBoxLayout", parent=self.widget3, children=[spacer, self.partial_initial_button])
+
         # 将中心组件设置为滚动内容
-        self.setWidget(central_widget)
+        self.setWidget(self.central_widget)
 
     @typing.override
     def eventFilter(self, obj, event):
@@ -257,7 +284,7 @@ class PageShortcutSetting(QScrollArea):
             self.checkbox.setChecked(False) 
         else:
             self.showKeyPressProgramme()
-
+    
     def showKeyPressProgramme(self, programme_index = config_js['key_press_programme'], visible = False) -> None:
         """展示当前所选择的方案内容"""
         # 切换可见性
@@ -329,6 +356,17 @@ class PageShortcutSetting(QScrollArea):
                 shortcutEditer.removeEventFilter(shortcutEditer) # 清除事件过滤器
                 shortcutEditer.setStyleSheet("""QWidget{ min-height: 50px; background-color: white; font-size: 36px; color: gray; }""")
                 
+    def partial_init(self):
+        """
+        局部初始化:
+        清空自定义快捷方案
+        """
+        reply = QMessageBox.question(self, None, "确定要清空吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            clear_shortcut_settings()
+            for i in range(len(self.shortcutEditer_group)):
+                self.shortcutEditer_group[i].setText(config_js['custom_shortcut_keys'][self.shortcut_content['0'][i]])
+
     @typing.override
     def mousePressEvent(self, event):
         """鼠标点击事件"""

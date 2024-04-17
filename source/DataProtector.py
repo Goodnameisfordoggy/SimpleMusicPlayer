@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-10 20:45:06
+LastEditTime: 2024-04-17 22:27:48
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\DataProtector.py
 Description: 
 
@@ -19,6 +19,7 @@ import threading
 import json
 import os
 import time
+from pinyin import get_initial
 
 
 # 声明全局变量
@@ -28,9 +29,10 @@ WORKING_DIRECTORY_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file_
 IMAGE_FOLDER_PATH = WORKING_DIRECTORY_PATH + r'\phbimage'
 # 配置文件夹路径
 CONFIG_FOLDER_PATH = WORKING_DIRECTORY_PATH + r'\profiles'
-# 读取 PlayerConfig.json, PlayerStyle.json文件并加载为 JSON 对象
+# 读取 PlayerConfig.json 文件并加载为 JSON 对象
 with open(CONFIG_FOLDER_PATH + r'\PlayerConfig.json', 'r', encoding='utf-8') as config_json:
     config_js = json.load(config_json)
+# 读取 PlayerStyle.json文件并加载为 JSON 对象
 with open(CONFIG_FOLDER_PATH + r'\PlayerStyle.json', 'r', encoding='utf-8') as style_json:
     style_js = json.load(style_json)
 # 读取 PlayerStyle.css 文件内容为文本
@@ -41,24 +43,26 @@ with open(CONFIG_FOLDER_PATH + r'\PlayerStyle.css', 'r', encoding='utf-8') as pl
 class DataProtector(object):
     """ 子线程 --数据同步与保存 """
 
-    def __init__(self, main_window) -> None:
+    def __init__(self, app) -> None:
         # 类对象传入
-        self.main_window = main_window
-
+        self.app = app
         # 线程绑定  daemon=True 设置该线程为守护线程,随主线程结束而退出
         self.thread_data_protector = threading.Thread(target=self.callbackfunc, daemon=True, name='DataProtector')
         self.thread_data_protector.start()
+        
+
+        
 
     def synchronous_data(self) -> None:
         """ 同步数据到 config_js <class 'dict'> """
         try:
-            config_js['current_songlist_path'] = self.main_window.current_songlist_path
-            config_js['current_music_number'] = self.main_window.current_music_number
-            config_js['file_total_time'] = self.main_window.file_total_time
-            config_js['current_position'] = self.main_window.player.time
-            config_js['need_cycle'] = self.main_window.need_cycle
-            config_js['current_songlist'] = self.main_window.current_songlist
-            config_js['current_music_name'] = self.main_window.current_music_name
+            config_js['current_songlist_path'] = self.app.current_songlist_path
+            config_js['current_music_number'] = self.app.current_music_number
+            config_js['file_total_time'] = self.app.file_total_time
+            config_js['current_position'] = self.app.player.time
+            config_js['need_cycle'] = self.app.need_cycle
+            config_js['current_songlist'] = self.app.current_songlist
+            config_js['current_music_name'] = self.app.current_music_name
             
         except AttributeError:
             # 忽略部分属性不存在时带来的报错
@@ -83,3 +87,80 @@ class DataProtector(object):
                 json.dump(config_js, config_json, ensure_ascii=False, indent=4)
         except NameError:
             print("NameError!: 请检查json文件的位置.")
+    
+def data_initialization_detection():
+    """数据初始化检测"""
+    if not config_js['playlist']:
+        config_js['current_songlist_path'] = ""
+        config_js['foregoing_songlist_path'] = ""
+        config_js['current_music_number'] = "*0*"
+        config_js['file_total_time'] = 0
+        config_js['current_position'] = 0.0
+        config_js['current_music_name'] = ""
+        config_js['current_songlist_group'] = "" 
+        config_js['current_songlist'] = ""
+data_initialization_detection()
+
+def clear_shortcut_settings():
+    """清空自定义快捷方案"""
+    config_js['custom_shortcut_keys']['next_play'] = "按下快捷键"
+    config_js['custom_shortcut_keys']['previous_play'] = "按下快捷键"
+    config_js['custom_shortcut_keys']['pause_or_begin'] = "按下快捷键"
+    config_js['custom_shortcut_keys']['random_play'] = "按下快捷键"
+    config_js['custom_shortcut_keys']['single_cycle_play'] = "按下快捷键"
+
+def initialize_image_and_icon_settings():
+    """初始化图片/图标设置"""
+    with open(CONFIG_FOLDER_PATH + r'InitialPlayerConfig.json', 'r', encoding='utf-8') as js_file:
+        init_config = json.load(js_file)
+    config_js['ApplicationWindowBackGround'] = init_config['ApplicationWindowBackGround']
+    config_js['ApplicationWindowIcon'] = init_config['ApplicationWindowIcon']
+    config_js['SearchUIBackGround'] = init_config['SearchUIBackGround']
+    config_js['SearchUIIcon'] = init_config['SearchUIIcon']
+
+def load_playlist(directory_path) -> list[list]:
+            """
+            加载播放列表:
+            将三级目录结构转化为三级列表结构.
+
+            [
+                [
+                    "二级目录名称",
+                    [
+                        "三级目录名称",
+                        "三级目录绝对路径"
+                    ],
+                    [
+                        "三级目录名称",
+                        "三级目录绝对路径"
+                    ]
+                ],
+                [
+                    "二级目录名称",
+                    [
+                        "三级目录名称",
+                        "三级目录绝对路径"
+                    ]
+                ]
+            ]
+            """
+            playlist = []
+            for root, dirs, files in os.walk(directory_path):
+                if dirs:
+                    # 获取全部分组名称
+                    playlist = [[d] for d in sorted(dirs, key=lambda x: get_initial(x)[0])] # 按照拼音首字母排序
+                    index = 0
+                    for d in sorted(dirs, key=lambda x: get_initial(x)[0]):
+                        for sec_root, sec_dirs, _ in os.walk(os.path.join(root, d)): # 一级子目录路径
+                            if sec_dirs:
+                                for sec_d in sorted(sec_dirs, key=lambda x: get_initial(x)[0]):
+                                    sec_list = [sec_d] + [os.path.join(sec_root, sec_d)] # 制作歌单项结构
+                                    playlist[index].append(sec_list)
+                                break
+                            else:
+                                break
+                        index += 1
+                    break
+                else:
+                    break        
+            return playlist

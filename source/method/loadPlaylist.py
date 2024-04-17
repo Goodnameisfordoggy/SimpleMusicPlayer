@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-13 21:55:01
+LastEditTime: 2024-04-17 18:19:24
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\method\loadPlaylist.py
 Description: 
 
@@ -21,7 +21,28 @@ from pinyin import get_initial
 def load_playlist(directory_path) -> list[list]:
             """
             加载播放列表:
-            将目录结构转化为三级列表结构.
+            将三级目录结构转化为三级列表结构.
+
+            [
+                [
+                    "二级目录名称",
+                    [
+                        "三级目录名称",
+                        "三级目录绝对路径"
+                    ],
+                    [
+                        "三级目录名称",
+                        "三级目录绝对路径"
+                    ]
+                ],
+                [
+                    "二级目录名称",
+                    [
+                        "三级目录名称",
+                        "三级目录绝对路径"
+                    ]
+                ]
+            ]
             """
             playlist = []
             for root, dirs, files in os.walk(directory_path):

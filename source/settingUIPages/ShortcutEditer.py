@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-10 20:44:37
+LastEditTime: 2024-04-17 21:58:48
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\ShortcutEditer.py
 Description: 
 
@@ -64,6 +64,10 @@ class ShortcutEditer(QWidget):
         self.label.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         layout.addWidget(self.label)
         self.setLayout(layout)
+
+    def setText(self, text):
+        """自定义设置文本内容"""
+        self.label.setText(text)
 
     def eventFilter(self, obj, event):
         """事件过滤器"""
