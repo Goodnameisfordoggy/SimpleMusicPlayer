@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-18 23:48:51
+LastEditTime: 2024-04-19 00:03:31
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageImageSetting.py
 Description: 
 
@@ -177,12 +177,19 @@ class PageImageSetting(QScrollArea):
         # 将中心组件设置为滚动内容
         self.setWidget(self.central_widget)
     
+    def update_label_pixmap(self) -> None:
+        self.label_pixmap1.setPixmap(QPixmap(config_js['ApplicationWindowBackGround']).scaledToWidth(120))
+        self.label_pixmap2.setPixmap(QPixmap(config_js['ApplicationWindowIcon']).scaledToWidth(80))
+        self.label_pixmap3.setPixmap(QPixmap(config_js['SearchUIBackGround']).scaledToWidth(120))
+        self.label_pixmap4.setPixmap(QPixmap(config_js['SearchUIIcon']).scaledToWidth(80))
+    
     def select_a_file(self, config_js_key) -> None:
         file_path = getPath.get_file_path(caption="选择图片文件", filter_type='Image')
         # 更改配置文件中的路径
         if file_path:
             # 将新的图片文件路径储存到配置文件
             config_js[config_js_key] = file_path
+            self.update_label_pixmap()
             time.sleep(0.2)
             restartQuery.restart_query(self)
     
@@ -194,10 +201,8 @@ class PageImageSetting(QScrollArea):
         reply = QMessageBox.question(self, None, "确定恢复默认吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             initialize_image_and_icon_settings()
-            self.label_pixmap1.setPixmap(QPixmap(config_js['ApplicationWindowBackGround']).scaledToWidth(120))
-            self.label_pixmap2.setPixmap(QPixmap(config_js['ApplicationWindowIcon']).scaledToWidth(80))
-            self.label_pixmap3.setPixmap(QPixmap(config_js['SearchUIBackGround']).scaledToWidth(120))
-            self.label_pixmap4.setPixmap(QPixmap(config_js['SearchUIIcon']).scaledToWidth(80))
+            self.update_label_pixmap()
+            time.sleep(1) # 重启安全间隔, 确保数据同步
             # 获取当前执行的文件路径
             current_file = sys.argv[0]
             # 重启程序
