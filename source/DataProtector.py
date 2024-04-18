@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-17 22:27:48
+LastEditTime: 2024-04-18 23:38:36
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\DataProtector.py
 Description: 
 
@@ -111,7 +111,7 @@ def clear_shortcut_settings():
 
 def initialize_image_and_icon_settings():
     """初始化图片/图标设置"""
-    with open(CONFIG_FOLDER_PATH + r'InitialPlayerConfig.json', 'r', encoding='utf-8') as js_file:
+    with open(CONFIG_FOLDER_PATH + r'\InitialPlayerConfig.json', 'r', encoding='utf-8') as js_file:
         init_config = json.load(js_file)
     config_js['ApplicationWindowBackGround'] = init_config['ApplicationWindowBackGround']
     config_js['ApplicationWindowIcon'] = init_config['ApplicationWindowIcon']

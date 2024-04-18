@@ -1,5 +1,5 @@
 {
-    "# playlist settings": "²¥·ÅÁĞ±íÉèÖÃ #",
+    "# playlist settings": "æ’­æ”¾åˆ—è¡¨è®¾ç½® #",
     "playlist_path": "",
     "playlist": [
         [
@@ -11,13 +11,13 @@
         ]
     ],
 
-    "# Image/icon file path settings": "Í¼Æ¬/Í¼±êÎÄ¼şÂ·¾¶ÉèÖÃ #",
+    "# Image/icon file path settings": "å›¾ç‰‡/å›¾æ ‡æ–‡ä»¶è·¯å¾„è®¾ç½® #",
     "ApplicationWindowBackGround": "phbimage\\Golden Buddha.png",
     "ApplicationWindowIcon": "phbimage\\player.png",
     "SearchUIBackGround": "phbimage\\Beauty With Headset.png",
     "SearchUIIcon": "phbimage\\Beauty With Headset.png",
 
-    "# Run data while playing": "²¥·ÅÊ±ÔËĞĞÊı¾İ #",
+    "# Run data while playing": "æ’­æ”¾æ—¶è¿è¡Œæ•°æ® #",
     "current_songlist_path": "",
     "foregoing_songlist_path": "",
     "current_music_number": "*0*",
@@ -27,18 +27,18 @@
     "current_songlist_group": "",
     "need_cycle": false,
 
-    "# Shortcut Key Settings": "¿ì½İ¼üÉèÖÃ #",
+    "# Shortcut Key Settings": "å¿«æ·é”®è®¾ç½® #",
     "key_press_programme": "0",
     "use_custom_shortcut_keys": false,
     "custom_shortcut_keys": {
-        "next_play": "°´ÏÂ¿ì½İ¼ü",
-        "previous_play": "°´ÏÂ¿ì½İ¼ü",
-        "pause_or_begin": "°´ÏÂ¿ì½İ¼ü",
-        "random_play": "°´ÏÂ¿ì½İ¼ü",
-        "single_cycle_play": "°´ÏÂ¿ì½İ¼ü"
+        "next_play": "æŒ‰ä¸‹å¿«æ·é”®",
+        "previous_play": "æŒ‰ä¸‹å¿«æ·é”®",
+        "pause_or_begin": "æŒ‰ä¸‹å¿«æ·é”®",
+        "random_play": "æŒ‰ä¸‹å¿«æ·é”®",
+        "single_cycle_play": "æŒ‰ä¸‹å¿«æ·é”®"
     },
     
-    "# Other Settings": "ÆäËûÉèÖÃ",
+    "# Other Settings": "å…¶ä»–è®¾ç½®",
     "audio_file_suffixes": [
         ".mp3",
         ".wav",

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-13 22:51:35
+LastEditTime: 2024-04-18 23:48:51
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageImageSetting.py
 Description: 
 
@@ -22,7 +22,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QSpacerItem, QSizePolicy, QFrame)
 from PyQt5.QtGui import QPixmap
 from Simple_Qt import Label, PushButton, Layout
-from DataProtector import config_js
+from DataProtector import config_js, initialize_image_and_icon_settings
 from method import restartQuery, getPath
 
 
@@ -38,37 +38,50 @@ class PageImageSetting(QScrollArea):
         """ 页面UI搭建 """
         # 主布局
         # 中心组件
-        central_widget = QGroupBox(None, self)
-        central_widget.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
-        central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
+        self.central_widget = QGroupBox(None, self)
+        self.central_widget.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))# 设置中心组件拉伸限制
+        self.central_widget.setObjectName("central_widget")
+        self.central_widget.setStyleSheet("QGroupBox#central_widget { border: transparent; }")
 
-        main_layout = Layout.create(name='QVBoxLayout', parent=self, children=[central_widget])
-        
+        main_layout = Layout.create(name='QVBoxLayout', parent=self, children=[self.central_widget])
         # 中心组件布局
+        widget1 = QGroupBox(None, self)
+        widget1.setStyleSheet("QGroupBox { background-color: #fdfdfd; }")
+        
+        widget2 = QWidget(self.central_widget)
+
+        central_widget_layout = Layout.create(
+            name='QVBoxLayout', parent=self.central_widget, 
+            children=[widget1, widget2]
+        )
+
+        # widget1
         # 容器1
-        group_box_1 = QGroupBox("主窗口", central_widget)
+        group_box_1 = QGroupBox("主窗口", widget1)
         group_box_1.setStyleSheet("QGroupBox { color: gray; }")
         # 分隔线
         line1 = QFrame(self)
         line1.setFrameShape(QFrame.HLine)
         line1.setStyleSheet("QFrame { color: #f0f0f0; }")
         # 容器2
-        group_box_2 = QGroupBox("歌曲搜素窗口", central_widget)
+        group_box_2 = QGroupBox("歌曲搜素窗口", widget1)
         group_box_2.setStyleSheet("QGroupBox { color: gray; }")
         # 空白项
         spacer_item = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        central_widget_layout = Layout.create(
-            name='QVBoxLayout', parent=central_widget, 
+        
+        widget1_layout = Layout.create(
+            name='QVBoxLayout', parent=widget1, 
             children=[group_box_1, line1, group_box_2, spacer_item]
         )
+
         
         # 容器1布局
         # 1-1
         label1 = Label.create(parent=group_box_1, text="背景图片: ", StyleSheet="font-size: 30px;")
 
-        label2 = Label.create(parent=group_box_1, Pixmap=QPixmap(config_js['ApplicationWindowBackGround']).scaledToWidth(120))
-        # 1-2
+        self.label_pixmap1 = Label.create(parent=group_box_1, Pixmap=QPixmap(config_js['ApplicationWindowBackGround']).scaledToWidth(120))
+
         lineEdit1 = QLineEdit(group_box_1)
         lineEdit1.setPlaceholderText(config_js['ApplicationWindowBackGround'])
 
@@ -79,10 +92,10 @@ class PageImageSetting(QScrollArea):
         )
 
         layout1 = Layout.create(name='QHBoxLayout', children=[lineEdit1, button1])   
-        # 1-3
-        label3 = Label.create(parent=group_box_1, text="窗口图标: ", StyleSheet="font-size: 30px;")
-        # 1-4
-        label4 = Label.create(parent=group_box_1, Pixmap=QPixmap(config_js['ApplicationWindowIcon']).scaledToWidth(80))
+        # 1-2
+        label2 = Label.create(parent=group_box_1, text="窗口图标: ", StyleSheet="font-size: 30px;")
+        
+        self.label_pixmap2 = Label.create(parent=group_box_1, Pixmap=QPixmap(config_js['ApplicationWindowIcon']).scaledToWidth(80))
        
         lineEdit2 = QLineEdit(group_box_1)
         lineEdit2.setPlaceholderText(config_js['ApplicationWindowIcon'])
@@ -97,15 +110,15 @@ class PageImageSetting(QScrollArea):
 
         group_box_1_layout =  Layout.create(
             name='QVBoxLayout', parent=group_box_1, 
-            children=[label1, label2, layout1, label3, label4, layout2]
+            children=[label1, self.label_pixmap1, layout1, label2, self.label_pixmap2, layout2]
         )
 
         # 容器2布局
         # 2-1
-        label5 = Label.create(parent=group_box_2, text="背景图片: ", StyleSheet="font-size: 30px;")
+        label3 = Label.create(parent=group_box_2, text="背景图片: ", StyleSheet="font-size: 30px;")
 
-        label6 = Label.create(parent=group_box_2, Pixmap=QPixmap(config_js['SearchUIBackGround']).scaledToWidth(120))
-        # 2-2
+        self.label_pixmap3 = Label.create(parent=group_box_2, Pixmap=QPixmap(config_js['SearchUIBackGround']).scaledToWidth(120))
+        
         lineEdit3 = QLineEdit(group_box_2)
         lineEdit3.setPlaceholderText(config_js['SearchUIBackGround'])
 
@@ -116,11 +129,11 @@ class PageImageSetting(QScrollArea):
         )
 
         layout3 = Layout.create(name='QHBoxLayout', children=[lineEdit3, button3])   
-        # 2-3
-        label7 = Label.create(parent=group_box_2, text="窗口图标: ", StyleSheet="font-size: 30px;")
+        # 2-2
+        label4 = Label.create(parent=group_box_2, text="窗口图标: ", StyleSheet="font-size: 30px;")
 
-        label8 = Label.create(parent=group_box_2, Pixmap=QPixmap(config_js['SearchUIIcon']).scaledToWidth(80))
-        # 2-4
+        self.label_pixmap4 = Label.create(parent=group_box_2, Pixmap=QPixmap(config_js['SearchUIIcon']).scaledToWidth(80))
+        
         lineEdit4 = QLineEdit(group_box_2)
         lineEdit4.setPlaceholderText(config_js['SearchUIIcon'])
 
@@ -134,11 +147,35 @@ class PageImageSetting(QScrollArea):
 
         group_box_2_layout =  Layout.create(
             name='QVBoxLayout', parent=group_box_2, 
-            children=[label5, label6, layout3, label7, label8, layout4]
+            children=[label3, self.label_pixmap3, layout3, label4, self.label_pixmap4, layout4]
         )
 
+        # widget2布局
+        spacer = Label.create(parent=widget2, text='')
+        
+        self.partial_initial_button = PushButton.create(
+            parent=widget2, text="恢复默认图片图标", 
+            clicked_callback=self.partial_init,
+            StyleSheet=
+            """
+            QPushButton {
+            color: #ffffff;
+            font-size: 30px;
+            background-color: #f66c6c;
+            border-radius: 5px; 
+            min-height: 45px;
+            max-width: 250px;
+            }
+            QPushButton:hover {
+                background-color: #f78888; 
+            }
+            """)
+        
+        widget3_layout = Layout.create(name="QHBoxLayout", parent=widget2, children=[spacer, self.partial_initial_button])
+        
+
         # 将中心组件设置为滚动内容
-        self.setWidget(central_widget)
+        self.setWidget(self.central_widget)
     
     def select_a_file(self, config_js_key) -> None:
         file_path = getPath.get_file_path(caption="选择图片文件", filter_type='Image')
@@ -148,7 +185,24 @@ class PageImageSetting(QScrollArea):
             config_js[config_js_key] = file_path
             time.sleep(0.2)
             restartQuery.restart_query(self)
-
+    
+    def partial_init(self) -> None:
+        """
+        局部初始化:
+        初始化图片/图标设置,并重启APP
+        """
+        reply = QMessageBox.question(self, None, "确定恢复默认吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            initialize_image_and_icon_settings()
+            self.label_pixmap1.setPixmap(QPixmap(config_js['ApplicationWindowBackGround']).scaledToWidth(120))
+            self.label_pixmap2.setPixmap(QPixmap(config_js['ApplicationWindowIcon']).scaledToWidth(80))
+            self.label_pixmap3.setPixmap(QPixmap(config_js['SearchUIBackGround']).scaledToWidth(120))
+            self.label_pixmap4.setPixmap(QPixmap(config_js['SearchUIIcon']).scaledToWidth(80))
+            # 获取当前执行的文件路径
+            current_file = sys.argv[0]
+            # 重启程序
+            os.execv(sys.executable, ['python3', current_file])
+            
 if __name__ == '__main__':
     app = QApplication(sys.argv)  # 可操作命令行参数
     window = PageImageSetting()
