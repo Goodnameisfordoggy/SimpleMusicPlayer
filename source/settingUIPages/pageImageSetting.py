@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-19 00:03:31
+LastEditTime: 2024-04-20 23:09:34
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageImageSetting.py
 Description: 
 
@@ -21,9 +21,9 @@ import time
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QLineEdit, QFileDialog, QMessageBox, QSpacerItem, QSizePolicy, QFrame)
 from PyQt5.QtGui import QPixmap
-from Simple_Qt import Label, PushButton, Layout
-from DataProtector import config_js, initialize_image_and_icon_settings
-from method import restartQuery, getPath
+from ..Simple_Qt import Label, PushButton, Layout
+from ..DataProtector import config_js, DataInitializationMethod
+from ..method import restartQuery, getPath
 
 
 class PageImageSetting(QScrollArea):
@@ -200,7 +200,7 @@ class PageImageSetting(QScrollArea):
         """
         reply = QMessageBox.question(self, None, "确定恢复默认吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            initialize_image_and_icon_settings()
+            DataInitializationMethod.initialize_image_and_icon_settings()
             self.update_label_pixmap()
             time.sleep(1) # 重启安全间隔, 确保数据同步
             # 获取当前执行的文件路径

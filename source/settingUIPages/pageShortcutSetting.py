@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-17 22:21:14
+LastEditTime: 2024-04-20 23:10:13
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageShortcutSetting.py
 Description: 
 
@@ -21,9 +21,9 @@ import typing
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QSizePolicy, QFrame, QComboBox, QCheckBox, QLabel, QMessageBox)
-from Simple_Qt import Label, Layout, PushButton
-from DataProtector import config_js, clear_shortcut_settings
-from settingUIPages.ShortcutEditer import ShortcutEditer, DEFAULT_STYLE
+from ..Simple_Qt import Label, Layout, PushButton
+from ..DataProtector import config_js, DataInitializationMethod
+from .ShortcutEditer import ShortcutEditer, DEFAULT_STYLE
 
 
 class PageShortcutSetting(QScrollArea):
@@ -363,7 +363,7 @@ class PageShortcutSetting(QScrollArea):
         """
         reply = QMessageBox.question(self, None, "确定要清空吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
-            clear_shortcut_settings()
+            DataInitializationMethod.clear_shortcut_settings()
             for i in range(len(self.shortcutEditer_group)):
                 self.shortcutEditer_group[i].setText(config_js['custom_shortcut_keys'][self.shortcut_content['0'][i]])
 

@@ -17,7 +17,7 @@ Copyright (c) 2023~2024 by HDJ, All Rights Reserved.
 '''
 import pynput.keyboard
 import keyboard
-from DataProtector import config_js
+from .DataProtector import config_js
 
 
 class KeyboardListener(object):

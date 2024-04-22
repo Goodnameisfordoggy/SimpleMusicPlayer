@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-03-24 20:53:20
+LastEditTime: 2024-04-22 23:55:18
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageConfigFiles.py
 Description: 
 
@@ -20,7 +20,7 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QMessageBox, QSizePolicy, QFrame)
-from Simple_Qt import Label, PushButton, Layout
+from ..Simple_Qt import Label, PushButton, Layout
                 
 
 class PageConfigFiles(QScrollArea):
@@ -116,11 +116,23 @@ class PageConfigFiles(QScrollArea):
         # 将中心组件设置为滚动内容
         self.setWidget(central_widget)
 
-    def open_selected_file(self, file_path) -> None:
-        """ 打开文件操作 """
+    def open_selected_file(self, file_RP) -> None:
+        """ 
+        打开文件操作:
+
+        args:
+        file_path_RP: 文件的相对路径
+        """
+        # 获取当前文件所在目录的父级目录
+        parent_directory_AP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        # 项目目录
+        project_folder_AP = os.path.dirname(parent_directory_AP)
+        # 手动添加路径分隔符
+        if not project_folder_AP.endswith(os.sep):
+            project_folder_AP += os.sep
         try:
             # 使用系统默认程序打开文件
-            os.startfile(file_path)
+            os.startfile(os.path.join(project_folder_AP, file_RP))
         except FileNotFoundError:
             QMessageBox.critical(self, 'FileNotFoundError', '文件不存在,请检查文件位置', QMessageBox.Ok)
     

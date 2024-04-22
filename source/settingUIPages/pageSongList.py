@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-17 20:37:32
+LastEditTime: 2024-04-20 23:08:59
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageSongList.py
 Description: 
 
@@ -24,10 +24,10 @@ from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QScrollArea, QGroupBox, QFileDialog, QMessageBox, QSizePolicy, QComboBox, QListWidget, 
     QSpacerItem)
-from Simple_Qt import Label, PushButton, Layout
+from ..Simple_Qt import Label, PushButton, Layout
 from .InputWindow import InputWindow
-from DataProtector import config_js, load_playlist
-from method import getPath, existSecondLevelDirectory, restartQuery
+from ..DataProtector import config_js, load_playlist
+from ..method import getPath, existSecondLevelDirectory, restartQuery
 
 
 class PageSongList(QScrollArea):

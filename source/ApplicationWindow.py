@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-10 23:48:22
+LastEditTime: 2024-04-22 22:51:53
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\ApplicationWindow.py
 Description: 
 
@@ -24,12 +24,11 @@ import pyglet
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QApplication
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from Simple_Qt import Label, PushButton, PackingModificationMethod
-from IsOverMonitor import IsOverMonitor
-from KeyboardListener import KeyboardListener
-from DataProtector import DataProtector
-from SettingUI import SettingUI
-from DataProtector import config_js, style_js, style_css
+from .Simple_Qt import Label, PushButton, PackingModificationMethod
+from .IsOverMonitor import IsOverMonitor
+from .KeyboardListener import KeyboardListener
+from .DataProtector import DataProtector, DataInitializationMethod, config_js, style_js, style_css
+from .SettingUI import SettingUI
 
 
 class ApplicationWindow(QMainWindow):
@@ -41,15 +40,18 @@ class ApplicationWindow(QMainWindow):
 
     def __init__(self, width=1236, height=764) -> None:
         super().__init__()
+        # 数据初始化检测
+        DataInitializationMethod.data_initialization_detection()
+
         # 一级UI设置
         self.setWindowTitle("Music Player")
         self.setFixedSize(width, height)  # 禁止修改窗口大小
         self.setWindowIcon(QIcon(config_js['ApplicationWindowIcon']))
         PackingModificationMethod.set_background_image(self, config_js['ApplicationWindowBackGround'])
         PackingModificationMethod.set_desktop_center(self)
-        # 一级UI界面的层次设置, False置于最底部, True置顶
-        self.setWindowFlag(Qt.WindowStaysOnTopHint, True)
+        self.setWindowFlag(Qt.WindowStaysOnTopHint, True) # 一级UI界面的层次设置, False置于最底部, True置顶
         # self.setWindowFlag(Qt.FramelessWindowHint) # 移除程序窗框饰条
+
         # 底层变量
         self.player = pyglet.media.Player()  # 播放器
         self.current_songlist_path = config_js['current_songlist_path']  # 获取音乐文件夹的绝对路径
@@ -64,8 +66,10 @@ class ApplicationWindow(QMainWindow):
         self.file_total_time = config_js['file_total_time']  # 音乐文件总时长
         self.key_press_programme = config_js['key_press_programme']  # 键盘快捷方案序号
         self.current_music_name = config_js['current_music_name']
+
         # 方法绑定
         self.build_platform()
+        
         # 绑定线程
         self.is_over_monitor = IsOverMonitor(self)
         self.key_board_listener = KeyboardListener(self)

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-10 23:50:38
+LastEditTime: 2024-04-20 22:55:17
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\SearchUI.py
 Description: 
 
@@ -22,8 +22,8 @@ import typing
 from PyQt5.QtWidgets import QApplication, QMessageBox, QDialog, QLineEdit, QTreeWidget, QTreeWidgetItem, QHeaderView
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-from Simple_Qt import Label, PushButton, Menu, Action, PackingModificationMethod
-from DataProtector import IMAGE_FOLDER_PATH, style_css, style_js, config_js
+from .Simple_Qt import Label, PushButton, Menu, Action, PackingModificationMethod
+from .DataProtector import IMAGE_FOLDER_PATH, style_css, style_js, config_js
 
 
 class SearchUI(QDialog):

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-18 23:38:36
+LastEditTime: 2024-04-22 23:24:00
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\DataProtector.py
 Description: 
 
@@ -39,7 +39,6 @@ with open(CONFIG_FOLDER_PATH + r'\PlayerStyle.json', 'r', encoding='utf-8') as s
 with open(CONFIG_FOLDER_PATH + r'\PlayerStyle.css', 'r', encoding='utf-8') as player_style_css:
     style_css = player_style_css.read()
 
-    
 class DataProtector(object):
     """ 子线程 --数据同步与保存 """
 
@@ -50,9 +49,6 @@ class DataProtector(object):
         self.thread_data_protector = threading.Thread(target=self.callbackfunc, daemon=True, name='DataProtector')
         self.thread_data_protector.start()
         
-
-        
-
     def synchronous_data(self) -> None:
         """ 同步数据到 config_js <class 'dict'> """
         try:
@@ -88,35 +84,49 @@ class DataProtector(object):
         except NameError:
             print("NameError!: 请检查json文件的位置.")
     
-def data_initialization_detection():
-    """数据初始化检测"""
-    if not config_js['playlist']:
-        config_js['current_songlist_path'] = ""
-        config_js['foregoing_songlist_path'] = ""
-        config_js['current_music_number'] = "*0*"
-        config_js['file_total_time'] = 0
-        config_js['current_position'] = 0.0
-        config_js['current_music_name'] = ""
-        config_js['current_songlist_group'] = "" 
-        config_js['current_songlist'] = ""
-data_initialization_detection()
 
-def clear_shortcut_settings():
-    """清空自定义快捷方案"""
-    config_js['custom_shortcut_keys']['next_play'] = "按下快捷键"
-    config_js['custom_shortcut_keys']['previous_play'] = "按下快捷键"
-    config_js['custom_shortcut_keys']['pause_or_begin'] = "按下快捷键"
-    config_js['custom_shortcut_keys']['random_play'] = "按下快捷键"
-    config_js['custom_shortcut_keys']['single_cycle_play'] = "按下快捷键"
+class DataInitializationMethod(object):
+    """数据初始化方法"""
+    
+    @staticmethod
+    def clear_shortcut_settings():
+        """清空自定义快捷方案"""
+        config_js['custom_shortcut_keys']['next_play'] = "按下快捷键"
+        config_js['custom_shortcut_keys']['previous_play'] = "按下快捷键"
+        config_js['custom_shortcut_keys']['pause_or_begin'] = "按下快捷键"
+        config_js['custom_shortcut_keys']['random_play'] = "按下快捷键"
+        config_js['custom_shortcut_keys']['single_cycle_play'] = "按下快捷键"
+    
+    @staticmethod
+    def initialize_image_and_icon_settings():
+        """初始化图片/图标设置"""
+        with open(CONFIG_FOLDER_PATH + r'\InitialPlayerConfig.json', 'r', encoding='utf-8') as js_file:
+            init_config = json.load(js_file)
+        # 获取当前文件所在目录的父级目录
+        parent_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        # 手动添加路径分隔符
+        if not parent_directory.endswith(os.sep):
+            parent_directory += os.sep
+        config_js['ApplicationWindowBackGround'] = os.path.join(parent_directory, init_config['ApplicationWindowBackGround'])
+        config_js['ApplicationWindowIcon'] = os.path.join(parent_directory, init_config['ApplicationWindowIcon'])
+        config_js['SearchUIBackGround'] = os.path.join(parent_directory, init_config['SearchUIBackGround'])
+        config_js['SearchUIIcon'] = os.path.join(parent_directory, init_config['SearchUIIcon'])
 
-def initialize_image_and_icon_settings():
-    """初始化图片/图标设置"""
-    with open(CONFIG_FOLDER_PATH + r'\InitialPlayerConfig.json', 'r', encoding='utf-8') as js_file:
-        init_config = json.load(js_file)
-    config_js['ApplicationWindowBackGround'] = init_config['ApplicationWindowBackGround']
-    config_js['ApplicationWindowIcon'] = init_config['ApplicationWindowIcon']
-    config_js['SearchUIBackGround'] = init_config['SearchUIBackGround']
-    config_js['SearchUIIcon'] = init_config['SearchUIIcon']
+    @staticmethod
+    def data_initialization_detection():
+        """数据初始化检测"""
+        if not config_js['playlist']:
+            config_js['current_songlist_path'] = ""
+            config_js['foregoing_songlist_path'] = ""
+            config_js['current_music_number'] = "*0*"
+            config_js['file_total_time'] = 0
+            config_js['current_position'] = 0.0
+            config_js['current_music_name'] = ""
+            config_js['current_songlist_group'] = "" 
+            config_js['current_songlist'] = ""
+        if not config_js['opened_times']:
+            DataInitializationMethod.initialize_image_and_icon_settings()
+        config_js['opened_times'] += 1
 
 def load_playlist(directory_path) -> list[list]:
             """

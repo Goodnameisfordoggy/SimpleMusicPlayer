@@ -19,7 +19,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QHBoxLayout
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtGui import QKeySequence
-from DataProtector import config_js
+from ..DataProtector import config_js
 
 DEFAULT_STYLE = """
     QWidget{ 

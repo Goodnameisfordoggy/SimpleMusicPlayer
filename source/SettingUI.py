@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-24 20:52:36
+LastEditTime: 2024-04-20 23:07:11
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\SettingUI.py
 Description: 
 
@@ -18,14 +18,10 @@ Copyright (c) 2023~2024 by HDJ, All Rights Reserved.
 import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QApplication, QWidget, QHBoxLayout, QMainWindow, QVBoxLayout, QStackedLayout
-from Simple_Qt import PushButton, Menu, Action
-from DataProtector import style_css
-from SearchUI import SearchUI
-from settingUIPages.pageConfigFiles import *
-from settingUIPages.pageImageSetting import *
-from settingUIPages.pageShortcutSetting import *
-from settingUIPages.pageSongList import *
-
+from .Simple_Qt import PushButton, Menu, Action
+from .DataProtector import style_css
+from .SearchUI import SearchUI
+from .settingUIPages import pageSongList, pageConfigFiles, pageImageSetting, pageShortcutSetting
 
 default_button_style = """
     QPushButton { 
@@ -133,13 +129,13 @@ class SettingUI(QMainWindow):
         self.button_group[0].setStyleSheet(checked_button_style)
 
         # 右侧堆叠子页
-        page_SongList = PageSongList(self, self.app)
+        page_SongList = pageSongList.PageSongList(self, self.app)
         self.right_layout.addWidget(page_SongList)
-        page_ImageSetting = PageImageSetting(self)
+        page_ImageSetting = pageImageSetting.PageImageSetting(self)
         self.right_layout.addWidget(page_ImageSetting)
-        page_ShortcutSetting = PageShortcutSetting(self)
+        page_ShortcutSetting = pageShortcutSetting.PageShortcutSetting(self)
         self.right_layout.addWidget(page_ShortcutSetting)
-        page_ConfigFiles = PageConfigFiles(self)
+        page_ConfigFiles = pageConfigFiles.PageConfigFiles(self)
         self.right_layout.addWidget(page_ConfigFiles)
 
     

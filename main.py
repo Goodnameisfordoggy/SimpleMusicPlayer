@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-18 23:26:41
+LastEditTime: 2024-04-20 23:12:01
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\main.py
 Description: 
 
@@ -17,7 +17,7 @@ Copyright (c) 2023~2024 by HDJ, All Rights Reserved.
 '''
 import sys
 from PyQt5.QtWidgets import QApplication
-from ApplicationWindow import ApplicationWindow
+from source.ApplicationWindow import ApplicationWindow
 
 
 def main():

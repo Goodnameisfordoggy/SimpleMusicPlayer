@@ -38,12 +38,13 @@
         "single_cycle_play": "按下快捷键"
     },
     
-    "# Other Settings": "其他设置",
+    "# Other Settings": "其他设置 #",
     "audio_file_suffixes": [
         ".mp3",
         ".wav",
         ".ogg",
         ".flac"
     ],
+    "opened_times": 0,
     "current_songlist": {}
 }
