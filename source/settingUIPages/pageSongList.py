@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-20 23:08:59
+LastEditTime: 2024-04-23 23:51:04
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageSongList.py
 Description: 
 
@@ -156,11 +156,14 @@ class PageSongList(QScrollArea):
     
     def wait_for_input_group_name(self) -> None:
         """创建一个窗口用来获取用户输入"""
-        self.group_name_inputWindow = InputNewGroupNameWindow(title='请输入新的分组名', text='不能全为数字', button_text='创建')
-        self.group_name_inputWindow._show()
-        # 启用新线程等待用户输入
-        self.thread_create_a_new_group = threading.Thread(target=self.create_a_new_group, daemon=True, name='to_create_a_new_group')
-        self.thread_create_a_new_group.start()
+        if config_js['playlist_path']:
+            self.group_name_inputWindow = InputNewGroupNameWindow(title='请输入新的分组名', text='不能全为数字', button_text='创建')
+            self.group_name_inputWindow._show()
+            # 启用新线程等待用户输入
+            self.thread_create_a_new_group = threading.Thread(target=self.create_a_new_group, daemon=True, name='to_create_a_new_group')
+            self.thread_create_a_new_group.start()
+        else:
+            QMessageBox.warning(self, 'Music Player', "未检测到播放列表,请先添加播放列表!", QMessageBox.Ok)
 
     def create_a_new_group(self) -> None:
         """创建新的歌单组"""
@@ -174,12 +177,12 @@ class PageSongList(QScrollArea):
                 break
             elif user_input:
                 if user_input in existing_groups:
-                    # print("分组名已存在")
+                    print("分组名已存在")
                     break
                 # 生成新分组目录绝对路径
                 new_folder_AP = os.path.join(os.path.dirname(os.path.dirname(config_js['current_songlist_path'])), user_input)
                 if os.path.exists(new_folder_AP): 
-                    # print("目录已存在")
+                    print("目录已存在")
                     break
                 else:
                     # 在配置文件的结构中添加新的分组项
@@ -187,7 +190,7 @@ class PageSongList(QScrollArea):
                     config_js['playlist'].append(new_group_item)
                     # 在分组父级目录中创建新目录
                     os.makedirs(new_folder_AP)
-                    # print("创建成功")
+                    print("创建成功")
                     break   
             else:
                 time.sleep(0.2)
@@ -196,11 +199,14 @@ class PageSongList(QScrollArea):
     
     def wait_for_input_songlist_name(self) -> None:
         """创建一个窗口用来获取用户输入"""
-        self.songlist_name_inputWindow = InputNewSonglistNameWindow(title='请输入新的歌单名', text='不能全为数字', button_text='创建')
-        self.songlist_name_inputWindow._show()
-        # 启用新线程等待用户输入
-        self.thread_create_a_new_songlist = threading.Thread(target=self.create_a_new_songlist, daemon=True, name='to_create_a_new_songlist')
-        self.thread_create_a_new_songlist.start()
+        if config_js['playlist_path']:
+            self.songlist_name_inputWindow = InputNewSonglistNameWindow(title='请输入新的歌单名', text='不能全为数字', button_text='创建')
+            self.songlist_name_inputWindow._show()
+            # 启用新线程等待用户输入
+            self.thread_create_a_new_songlist = threading.Thread(target=self.create_a_new_songlist, daemon=True, name='to_create_a_new_songlist')
+            self.thread_create_a_new_songlist.start()
+        else:
+            QMessageBox.warning(self, 'Music Player', "未检测到播放列表,请先添加播放列表!", QMessageBox.Ok)
 
     def create_a_new_songlist(self) -> None:
         """创建新的歌单"""
@@ -217,7 +223,7 @@ class PageSongList(QScrollArea):
                 break
             elif user_input:
                 if user_input in existing_groups:
-                    # print("歌单名已存在")
+                    print("歌单名已存在")
                     break
                 # 获取主目录路径
                 primary_folder_path = ''
@@ -231,7 +237,7 @@ class PageSongList(QScrollArea):
                 # 生成新歌单目录绝对路径
                 new_folder_AP = f'{primary_folder_path}\\{config_js['current_songlist_group']}\\{user_input}'
                 if os.path.exists(new_folder_AP): 
-                    # print("目录已存在")
+                    print("目录已存在")
                     break
                 else:       
                     # 在配置文件的结构中添加新的歌单项
@@ -242,7 +248,7 @@ class PageSongList(QScrollArea):
                             break
                     # 在当前分组中创建新歌单目录
                     os.makedirs(new_folder_AP)
-                    # print("创建成功")
+                    print("创建成功")
                     break   
             else:
                 time.sleep(0.2)
@@ -260,14 +266,14 @@ class PageSongList(QScrollArea):
             if os.path.exists(self.selected_subitem_AP):
                 object_file_name = os.path.basename(self.selected_subitem_AP)  # 目标文件名
                 # 获取用户所选目录绝对路径
-                folder_path = getPath.get_folder_path(text = '选择目标歌单', initial_position = os.path.dirname(config_js['current_songlist_path']))
+                folder_path = getPath.get_folder_path(caption = '选择目标歌单', directory = os.path.dirname(config_js['current_songlist_path']))
                 if folder_path:
                     # 检查目标目录是否存在同名文件
                     if os.path.exists(os.path.join(folder_path, object_file_name)):
                         # 弹出提示框询问用户是否覆盖文件
                         response = QMessageBox.question(
                             self,
-                            '文件已存在',
+                            'Music Player',
                             '目标目录中已存在同名文件，是否要覆盖?',
                             QMessageBox.Yes | QMessageBox.No
                         )
@@ -291,9 +297,9 @@ class PageSongList(QScrollArea):
                         row = self.listWidget.row(item)
                         self.listWidget.takeItem(row)
             else:
-                QMessageBox.critical(self, 'FileNotFoundError', '文件不存在!', QMessageBox.Ok)
+                QMessageBox.critical(self, 'Music Player', '文件不存在!', QMessageBox.Ok)
         else:
-            QMessageBox.warning(self, 'warning', '未选中文件!', QMessageBox.Ok)
+            QMessageBox.warning(self, 'Music Player', '未选中文件!', QMessageBox.Ok)
 
     def copy_to_other_songlist(self) -> None:
         """复制到其他目录"""
@@ -302,14 +308,14 @@ class PageSongList(QScrollArea):
             if os.path.exists(self.selected_subitem_AP):
                 object_file_name = os.path.basename(self.selected_subitem_AP)  # 目标文件名
                 # 获取用户所选目录绝对路径
-                folder_path = getPath.get_folder_path(text = '选择目标歌单', initial_position = os.path.dirname(config_js['current_songlist_path']))
+                folder_path = getPath.get_folder_path(caption = '选择目标歌单', directory = os.path.dirname(config_js['current_songlist_path']))
                 if folder_path:
                     # 检查目标目录是否存在同名文件
                     if os.path.exists(os.path.join(folder_path, object_file_name)):
                         # 弹出提示框询问用户是否覆盖文件
                         response = QMessageBox.question(
                             self,
-                            '文件已存在',
+                            'Music Player',
                             '目标目录中已存在同名文件，是否要覆盖?',
                             QMessageBox.Yes | QMessageBox.No
                         )
@@ -324,11 +330,11 @@ class PageSongList(QScrollArea):
                     # 将选中状态置空
                     self.selected_subitem_AP = None
                     # 完成提示
-                    QMessageBox.information(self, 'information', "复制成功")
+                    QMessageBox.information(self, 'Music Player', "复制成功Qwq")
             else:
-                QMessageBox.critical(self, 'FileNotFoundError', "文件不存在!", QMessageBox.Ok)
+                QMessageBox.critical(self, 'Music Player', "文件不存在!", QMessageBox.Ok)
         else:
-            QMessageBox.warning(self, 'warning', "未选中文件!", QMessageBox.Ok)
+            QMessageBox.warning(self, 'Music Player', "未选中文件!", QMessageBox.Ok)
             
     def removed_from_the_current_songlist(self) ->None:
         """从当前文件夹删除目标文件, 并添加到"最近删除"目录"""
@@ -370,15 +376,15 @@ class PageSongList(QScrollArea):
                         row = self.listWidget.row(item)
                         self.listWidget.takeItem(row)
                 else:
-                    QMessageBox.critical(self, 'FileNotFoundError', "文件不存在!", QMessageBox.Ok)
+                    QMessageBox.critical(self, 'Music Player', "文件不存在!", QMessageBox.Ok)
         else:
-            QMessageBox.warning(self, 'warning', "未选中文件!", QMessageBox.Ok)
+            QMessageBox.warning(self, 'Music Player', "未选中文件!", QMessageBox.Ok)
 
     def get_all_audio_files_in_folder(self, folder_path: str) -> list:
         """获取所选文件夹下的全部音频文件名称"""
         audio_files = []
         
-        if folder_path:
+        if folder_path and os.path.exists(folder_path):
             for file_name in os.listdir(folder_path):
                 file_path = os.path.join(folder_path, file_name)
                 if os.path.isfile(file_path): # 判断file_path指向的是否为文件
@@ -432,7 +438,7 @@ class PageSongList(QScrollArea):
                 config_js['playlist'] = load_playlist(folder_path)
                 restartQuery.restart_query(self)
             else:
-                QMessageBox.warning(self, 'warning', '存储结构不符合条件!', QMessageBox.Ok)
+                QMessageBox.warning(self, 'Music Player', '存储结构不符合条件!', QMessageBox.Ok)
    
     @typing.override
     def eventFilter(self, obj, event):
@@ -463,7 +469,7 @@ class InputNewGroupNameWindow(InputWindow):
         if not value.isdigit():
             self._user_input = value
         else:
-            QMessageBox.warning(self, 'warning', '分组名不建议全为数字!')
+            QMessageBox.warning(self, 'Music Player', '分组名不建议全为数字!')
 
     @typing.override
     def get_input(self) -> None:
@@ -488,7 +494,7 @@ class InputNewSonglistNameWindow(InputWindow):
         if not value.isdigit():
             self._user_input = value
         else:
-            QMessageBox.warning(self, 'warning', '歌单名不建议全为数字!')
+            QMessageBox.warning(self, 'Music Player', '歌单名不建议全为数字!')
 
     @typing.override
     def get_input(self) -> None:

@@ -361,7 +361,7 @@ class PageShortcutSetting(QScrollArea):
         局部初始化:
         清空自定义快捷方案
         """
-        reply = QMessageBox.question(self, None, "确定要清空吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'Music Player', "确定要清空吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             DataInitializationMethod.clear_shortcut_settings()
             for i in range(len(self.shortcutEditer_group)):

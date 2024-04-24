@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-22 23:55:18
+LastEditTime: 2024-04-23 22:53:48
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageConfigFiles.py
 Description: 
 
@@ -134,7 +134,7 @@ class PageConfigFiles(QScrollArea):
             # 使用系统默认程序打开文件
             os.startfile(os.path.join(project_folder_AP, file_RP))
         except FileNotFoundError:
-            QMessageBox.critical(self, 'FileNotFoundError', '文件不存在,请检查文件位置', QMessageBox.Ok)
+            QMessageBox.critical(self, 'Music Player', '文件不存在,请检查文件位置', QMessageBox.Ok)
     
 
 if __name__ == '__main__':

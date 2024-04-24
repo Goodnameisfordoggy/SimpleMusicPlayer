@@ -79,6 +79,7 @@ class ShortcutEditer(QWidget):
             # 为选中组件添加选中样式
             self.setStyleSheet(CHECKED_STYLE)
 
+        
         if event.type() == QEvent.KeyPress:
             modifiers = event.modifiers()  # 获取修饰键 Control, Shift, Meta(Win), Alt
             key = event.key()

@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-04-22 22:51:53
+LastEditTime: 2024-04-23 22:49:05
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\ApplicationWindow.py
 Description: 
 
@@ -98,29 +98,25 @@ class ApplicationWindow(QMainWindow):
         
         基于音乐文件路径 与 pyglet.media.player.Player的播放操作
         """
-        try:
-            # 加载音乐文件
-            music_file_path = self.current_songlist.get(f'{self.current_music_number}')
-        except TypeError:
-            QMessageBox.critical(self, '温馨提示', '切换文件夹后,请在查找界面选择歌曲或点击随机播放.')
-        else:
-            # 根据绝对路径创建音频文件的MediaSource对象
-            music = pyglet.media.load(music_file_path)
-            # 获取音频文件总时长
-            self.file_total_time = int(music.duration)
-            # 创建播放器
-            self.player = pyglet.media.Player()
-            # 将MediaSource对象添加到播放器(player)
-            self.player.queue(music)
-            # 调整播放位置
-            self.player.seek(music_position)
-            # 开始播放
-            self.player.play()
-            # 更改当前正在播放标签的文本
-            self.change_label_current_play_content()
-            # 记录播放歌曲所属的歌单
-            config_js['foregoing_songlist_path'] = os.path.dirname(
-                self.current_songlist.get(f'{self.current_music_number}'.replace('*', '')))
+        # 加载音乐文件
+        music_file_path = self.current_songlist.get(f'{self.current_music_number}')
+        # 根据绝对路径创建音频文件的MediaSource对象
+        music = pyglet.media.load(music_file_path)
+        # 获取音频文件总时长
+        self.file_total_time = int(music.duration)
+        # 创建播放器
+        self.player = pyglet.media.Player()
+        # 将MediaSource对象添加到播放器(player)
+        self.player.queue(music)
+        # 调整播放位置
+        self.player.seek(music_position)
+        # 开始播放
+        self.player.play()
+        # 更改当前正在播放标签的文本
+        self.change_label_current_play_content()
+        # 记录播放歌曲所属的歌单
+        config_js['foregoing_songlist_path'] = os.path.dirname(
+            self.current_songlist.get(f'{self.current_music_number}'.replace('*', '')))
 
     def change_label_current_play_content(self) -> None:
         """ 用于更改"当前播放歌曲"标签显示内容的操作 """
@@ -169,7 +165,7 @@ class ApplicationWindow(QMainWindow):
         if not self.initializationDetection():
             return
         if not self.current_music_number:
-            QMessageBox.critical(self, '错误', '请点击开始播放')
+            QMessageBox.critical(self, 'Music Player', '请点击开始播放')
         else:
             self.player.pause()
             if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
@@ -186,7 +182,7 @@ class ApplicationWindow(QMainWindow):
         if not self.initializationDetection():
             return
         if not self.current_music_number:
-            QMessageBox.critical(self, '错误', '请点击开始播放')
+            QMessageBox.critical(self, 'Music Player', '请点击开始播放')
         else:
             self.player.pause()
             if isinstance(self.current_music_number, str):  # 确保解密/确保对象类型为int
@@ -238,7 +234,7 @@ class ApplicationWindow(QMainWindow):
         if not self.initializationDetection():
             return
         if not self.current_music_number:
-            QMessageBox.critical(self, '错误', '请点击开始播放')
+            QMessageBox.critical(self, 'Music Player', '请点击开始播放')
         else:
             # 点击开始循环
             if not self.need_cycle:
@@ -252,7 +248,7 @@ class ApplicationWindow(QMainWindow):
 
     def confirm_to_quit(self) -> None:
         """ 确认退出(按钮绑定操作) """
-        reply = QMessageBox.question(self, '温馨提示', '记得给 作者:HDJ 一颗小星星', QMessageBox.Yes | QMessageBox.No)
+        reply = QMessageBox.question(self, 'Music Player', '记得给 作者:HDJ 一颗小星星', QMessageBox.Yes | QMessageBox.No)
         if reply == QMessageBox.Yes:
             self.close()  # 使用close方法来关闭窗口
     

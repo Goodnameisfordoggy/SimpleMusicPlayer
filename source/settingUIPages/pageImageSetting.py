@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: please fill in
-LastEditTime: 2024-04-20 23:09:34
+LastEditTime: 2024-04-23 22:53:39
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\settingUIPages\pageImageSetting.py
 Description: 
 
@@ -198,7 +198,7 @@ class PageImageSetting(QScrollArea):
         局部初始化:
         初始化图片/图标设置,并重启APP
         """
-        reply = QMessageBox.question(self, None, "确定恢复默认吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(self, 'Music Player', "确定恢复默认吗?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if reply == QMessageBox.Yes:
             DataInitializationMethod.initialize_image_and_icon_settings()
             self.update_label_pixmap()

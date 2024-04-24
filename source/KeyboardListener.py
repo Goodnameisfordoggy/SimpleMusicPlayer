@@ -1,7 +1,7 @@
 '''
 Author: HDJ
 StartDate: 2023-6-14 00:00:00
-LastEditTime: 2024-03-24 20:55:38
+LastEditTime: 2024-04-24 19:01:11
 FilePath: \pythond:\LocalUsers\Goodnameisfordoggy-Gitee\a-simple-MusicPlayer\source\KeyboardListener.py
 Description: 
 
@@ -193,8 +193,11 @@ class KeyboardListener(object):
             # 单曲循环
             elif keyboard.is_pressed(config_js['custom_shortcut_keys']['single_cycle_play']):
                 self.main_window.single_cycle_play()
+        except ValueError: # 忽略快捷键不存在的情况
+            pass
         except AttributeError:
             pass
+        
 
         
 

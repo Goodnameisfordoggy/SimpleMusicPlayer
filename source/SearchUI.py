@@ -106,9 +106,9 @@ class SearchUI(QDialog):
                         singer_name # 提取的歌手名
                     )
             if num <= 0:
-                QMessageBox.warning(self, '搜素结束', '很抱歉,没有找到歌曲', QMessageBox.Ok)
+                QMessageBox.warning(self, 'Music Player', '很抱歉,没有找到歌曲', QMessageBox.Ok)
         else:
-            QMessageBox.critical(self, 'ERROR', '您未输入需查询的歌曲, 请输入后搜索!', QMessageBox.Retry)
+            QMessageBox.critical(self, 'Music Player', '您未输入需查询的歌曲, 请输入后搜索!', QMessageBox.Retry)
 
     def add_tree_item(self, text1, text2, text3) -> None:
         """ 自定义的树形图方法,用于批量添加项目 """
@@ -126,12 +126,12 @@ class SearchUI(QDialog):
             self.main_window.current_music_number = self.onclick_song_number
         else:
             QMessageBox.critical(
-                self, 'ERROR', '请点击歌曲进行选定!', QMessageBox.Retry)
+                self, 'Music Player', '请点击歌曲进行选定!', QMessageBox.Retry)
 
     def search_ui_play(self) -> None:
         """ 播放(二级UI按钮绑定操作),用于播放选中的歌曲"""
         if self.onclick_song_number is None or isinstance(self.main_window.current_music_number, str):
-            QMessageBox.warning(self, 'Warning', '您未选定歌曲', QMessageBox.Ok)
+            QMessageBox.warning(self, 'Music Player', '您未选定歌曲', QMessageBox.Ok)
         else:
             if self.main_window.current_music_number is not None:
                 self.main_window.player.pause()
