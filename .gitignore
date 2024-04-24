@@ -3,4 +3,4 @@
 venv*/
 .vscode/
 __pycache__/
-PlayerConfig.json
+profiles/PlayerConfig.json
