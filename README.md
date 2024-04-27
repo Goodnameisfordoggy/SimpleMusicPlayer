@@ -20,7 +20,20 @@
     |:---:|:---:|
     | 暂无|source, profiles, phbimage|
 
-## GUI展示
+#### 使用的包
+- python版本: 3.12.0
+- 部分包为较新版本,但不代表低版本不可用.
+
+    |包名|版本|
+    |:-|:-|
+    keyboard                  |0.13.5
+    numpy                     |1.26.4
+    pinyin                    |0.4.0
+    pyglet                    |2.0.10
+    pynput                    |1.7.6
+    PyQt5                     |5.15.10
+
+## GUI展
 
 #### APP主界面:
 <center>
